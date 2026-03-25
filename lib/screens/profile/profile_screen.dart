@@ -31,8 +31,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         subtitle: 'Configuración de cuenta',
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.screenH, vertical: AppSpacing.xl),
+        padding: const EdgeInsets.only(
+            left: AppSpacing.screenH,
+            right: AppSpacing.screenH,
+            top: AppSpacing.xl,
+            bottom: 120.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

@@ -86,7 +86,7 @@ class _MapScreenState extends State<MapScreen> {
 
           // ── Floating Bottom Panel (Nearby Reports) ────────────────────────
           Positioned(
-            bottom: AppSpacing.md,
+            bottom: 120.0,
             left: AppSpacing.screenH,
             right: AppSpacing.screenH,
             child: AppCard(

@@ -89,144 +89,152 @@ class _HomeScreenState extends State<HomeScreen> {
         onRefresh: () async {
           await Future.delayed(const Duration(milliseconds: 800));
         },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.screenH, vertical: AppSpacing.xl),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Greeting ────────────────────────────────────────────────
-              _GreetingHeader(),
+        backgroundColor: AppColors.background,
+        child: SafeArea(
+          bottom: false,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(
+              left: AppSpacing.screenH,
+              right: AppSpacing.screenH,
+              top: AppSpacing.xl,
+              bottom: 120.0, // Space for the floating nav bar
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Greeting ────────────────────────────────────────────────
+                _GreetingHeader(),
 
-              const SizedBox(height: AppSpacing.xxl),
+                const SizedBox(height: AppSpacing.xxl),
 
-              // ── Stat cards ───────────────────────────────────────────────
-              Text('Resumen general',
-                  style: theme.textTheme.titleLarge?.copyWith(fontSize: 18)),
-              const SizedBox(height: AppSpacing.md),
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: AppSpacing.md,
-                crossAxisSpacing: AppSpacing.md,
-                childAspectRatio: 1.5,
-                children: const [
-                  _StatCardItem(
-                    label: 'Total',
-                    value: '24',
-                    icon: Icons.folder_open_rounded,
-                    iconColor: AppColors.primary,
-                    iconBg: AppColors.infoLight,
-                  ),
-                  _StatCardItem(
-                    label: 'Pendientes',
-                    value: '8',
-                    icon: Icons.schedule_rounded,
-                    iconColor: AppColors.warning,
-                    iconBg: AppColors.warningLight,
-                  ),
-                  _StatCardItem(
-                    label: 'En Proceso',
-                    value: '11',
-                    icon: Icons.autorenew_rounded,
-                    iconColor: AppColors.primary,
-                    iconBg: AppColors.infoLight,
-                  ),
-                  _StatCardItem(
-                    label: 'Resueltos',
-                    value: '5',
-                    icon: Icons.check_circle_rounded,
-                    iconColor: AppColors.success,
-                    iconBg: AppColors.successLight,
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: AppSpacing.xxl),
-
-              // ── Quick actions ────────────────────────────────────────────
-              Text('Acciones rápidas',
-                  style: theme.textTheme.titleLarge?.copyWith(fontSize: 18)),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  Expanded(
-                    child: _QuickAction(
-                      icon: Icons.add_circle_outline_rounded,
-                      label: 'Nuevo Reporte',
-                      color: AppColors.primary,
-                      background: AppColors.infoLight,
-                      onTap: () {
-                        // TODO: navigate to create report
-                      },
+                // ── Stat cards ───────────────────────────────────────────────
+                Text('Resumen general',
+                    style: theme.textTheme.titleLarge?.copyWith(fontSize: 18)),
+                const SizedBox(height: AppSpacing.md),
+                GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  mainAxisSpacing: AppSpacing.md,
+                  crossAxisSpacing: AppSpacing.md,
+                  childAspectRatio: 1.5,
+                  children: const [
+                    _StatCardItem(
+                      label: 'Total',
+                      value: '24',
+                      icon: Icons.folder_open_rounded,
+                      iconColor: AppColors.primary,
+                      iconBg: AppColors.infoLight,
                     ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: _QuickAction(
-                      icon: Icons.map_outlined,
-                      label: 'Ver Mapa',
-                      color: AppColors.success,
-                      background: AppColors.successLight,
-                      onTap: () {
-                        // TODO: navigate to map
-                      },
+                    _StatCardItem(
+                      label: 'Pendientes',
+                      value: '8',
+                      icon: Icons.schedule_rounded,
+                      iconColor: AppColors.warning,
+                      iconBg: AppColors.warningLight,
                     ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: _QuickAction(
-                      icon: Icons.bar_chart_rounded,
-                      label: 'Análisis',
-                      color: AppColors.warning,
-                      background: AppColors.warningLight,
-                      onTap: () {
-                        // TODO: navigate to analytics
-                      },
+                    _StatCardItem(
+                      label: 'En Proceso',
+                      value: '11',
+                      icon: Icons.autorenew_rounded,
+                      iconColor: AppColors.primary,
+                      iconBg: AppColors.infoLight,
                     ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: AppSpacing.xxl),
-
-              // ── Recent reports ────────────────────────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Reportes recientes',
-                      style:
-                          theme.textTheme.titleLarge?.copyWith(fontSize: 18)),
-                  TextButton(
-                    onPressed: () {
-                      // TODO: navigate to report list
-                    },
-                    child: const Text('Ver todos'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              ..._recentReports.map(
-                (r) => ReportCard(
-                  title: r['title']!,
-                  description: r['description']!,
-                  status: r['status']!,
-                  date: r['date']!,
-                  category: r['category'],
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const ReportDetailScreen()),
-                    );
-                  },
+                    _StatCardItem(
+                      label: 'Resueltos',
+                      value: '5',
+                      icon: Icons.check_circle_rounded,
+                      iconColor: AppColors.success,
+                      iconBg: AppColors.successLight,
+                    ),
+                  ],
                 ),
-              ),
 
-              const SizedBox(height: 80), // Extra space for FAB
-            ],
+                const SizedBox(height: AppSpacing.xxl),
+
+                // ── Quick actions ────────────────────────────────────────────
+                Text('Acciones rápidas',
+                    style: theme.textTheme.titleLarge?.copyWith(fontSize: 18)),
+                const SizedBox(height: AppSpacing.md),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _QuickAction(
+                        icon: Icons.add_circle_outline_rounded,
+                        label: 'Nuevo Reporte',
+                        color: AppColors.primary,
+                        background: AppColors.infoLight,
+                        onTap: () {
+                          // TODO: navigate to create report
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: _QuickAction(
+                        icon: Icons.map_outlined,
+                        label: 'Ver Mapa',
+                        color: AppColors.success,
+                        background: AppColors.successLight,
+                        onTap: () {
+                          // TODO: navigate to map
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: _QuickAction(
+                        icon: Icons.bar_chart_rounded,
+                        label: 'Análisis',
+                        color: AppColors.warning,
+                        background: AppColors.warningLight,
+                        onTap: () {
+                          // TODO: navigate to analytics
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: AppSpacing.xxl),
+
+                // ── Recent reports ────────────────────────────────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Reportes recientes',
+                        style:
+                            theme.textTheme.titleLarge?.copyWith(fontSize: 18)),
+                    TextButton(
+                      onPressed: () {
+                        // TODO: navigate to report list
+                      },
+                      child: const Text('Ver todos'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                ..._recentReports.map(
+                  (r) => ReportCard(
+                    title: r['title']!,
+                    description: r['description']!,
+                    status: r['status']!,
+                    date: r['date']!,
+                    category: r['category'],
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const ReportDetailScreen()),
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 80), // Extra space for FAB
+              ],
+            ),
           ),
         ),
       ),
@@ -250,6 +258,9 @@ class _HomeScreenState extends State<HomeScreen> {
 // ── Private sub-widgets ───────────────────────────────────────────────────────
 
 class _GreetingHeader extends StatelessWidget {
+  // Mock user name for UI preview
+  static const String _mockUserName = 'Usuario';
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -260,15 +271,19 @@ class _GreetingHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '¡Buenos días! 👋',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontSize: 24,
+                'Hola de nuevo,',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Aquí está el resumen de hoy',
-                style: theme.textTheme.bodyMedium,
+                _mockUserName,
+                style: theme.textTheme.displayLarge?.copyWith(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -1,
+                ),
               ),
             ],
           ),

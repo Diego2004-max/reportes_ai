@@ -17,7 +17,7 @@ extension ReportStatusColor on String {
       case ReportStatus.pending:
         return AppColors.warning;
       case ReportStatus.inProgress:
-        return AppColors.primary;
+        return AppColors.info;
       case ReportStatus.resolved:
         return AppColors.success;
       case ReportStatus.rejected:
@@ -58,8 +58,8 @@ extension ReportStatusColor on String {
   }
 }
 
-/// Card that displays a single report in a list.
-/// All colors and spacing come from design tokens.
+/// Dynamic Card that displays a single report in a list.
+/// If status is 'En Proceso', it renders as a Dark Green card (active aesthetic).
 class ReportCard extends StatelessWidget {
   const ReportCard({
     super.key,
@@ -85,33 +85,42 @@ class ReportCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final statusColor = status.statusColor;
-    final statusBg = status.statusBackground;
-    final statusIc = status.statusIcon;
+    
+    // Forest Green Dynamic aesthetic logic
+    final isActive = status == ReportStatus.inProgress || status == ReportStatus.pending;
+    
+    final bgColor = isActive ? AppColors.primary : AppColors.surface;
+    final titleColor = isActive ? Colors.white : AppColors.textPrimary;
+    final bodyColor = isActive ? Colors.white70 : AppColors.textSecondary;
+    final iconColor = isActive ? Colors.white : AppColors.textDisabled;
+    
+    // For the badge, if active, we invert it against the dark green background
+    final badgeColor = isActive ? Colors.white : status.statusColor;
+    final badgeBgColor = isActive ? Colors.white.withAlpha(40) : status.statusBackground;
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        boxShadow: [
+        color: bgColor,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXxl),
+        boxShadow: const [
           BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: AppColors.shadowMedium,
+            blurRadius: 16,
+            offset: Offset(0, 4),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXxl),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          splashColor: AppColors.primaryLight.withAlpha(20),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXxl),
+          splashColor: Colors.white.withAlpha(30),
           highlightColor: Colors.transparent,
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -119,21 +128,6 @@ class ReportCard extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Category icon
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.sm),
-                      decoration: BoxDecoration(
-                        color: AppColors.infoLight,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusSm),
-                      ),
-                      child: const Icon(
-                        Icons.article_outlined,
-                        color: AppColors.primary,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
                     // Title + category
                     Expanded(
                       child: Column(
@@ -141,7 +135,10 @@ class ReportCard extends StatelessWidget {
                         children: [
                           Text(
                             title,
-                            style: theme.textTheme.titleMedium,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: titleColor,
+                              fontWeight: FontWeight.w700,
+                            ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -149,7 +146,9 @@ class ReportCard extends StatelessWidget {
                             const SizedBox(height: AppSpacing.xs),
                             Text(
                               category!,
-                              style: theme.textTheme.labelMedium,
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: bodyColor,
+                              ),
                             ),
                           ],
                         ],
@@ -157,11 +156,28 @@ class ReportCard extends StatelessWidget {
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     // Status badge
-                    _StatusBadge(
-                      label: status,
-                      color: statusColor,
-                      background: statusBg,
-                      icon: statusIc,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+                      decoration: BoxDecoration(
+                        color: badgeBgColor,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(status.statusIcon, size: 14, color: badgeColor),
+                          const SizedBox(width: 4),
+                          Text(
+                            status,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: badgeColor,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -171,31 +187,41 @@ class ReportCard extends StatelessWidget {
                 // ── Description ─────────────────────────────────────────────
                 Text(
                   description,
-                  style: theme.textTheme.bodyMedium,
+                  style: theme.textTheme.bodyMedium?.copyWith(color: bodyColor),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
 
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.xl),
 
-                // ── Footer: date ─────────────────────────────────────────────
+                // ── Footer: date and details link ───────────────────────────
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.calendar_today_outlined,
-                      size: 14,
-                      color: AppColors.textDisabled,
+                      size: 16,
+                      color: iconColor,
                     ),
-                    const SizedBox(width: AppSpacing.xs),
+                    const SizedBox(width: AppSpacing.sm),
                     Text(
                       date,
-                      style: theme.textTheme.labelSmall,
+                      style: theme.textTheme.labelMedium?.copyWith(color: iconColor),
                     ),
                     const Spacer(),
-                    const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 14,
-                      color: AppColors.textDisabled,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+                      decoration: BoxDecoration(
+                        color: isActive ? Colors.white.withAlpha(20) : AppColors.surfaceVariant,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                      ),
+                      child: Text(
+                        'Más detalles',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: isActive ? Colors.white : AppColors.primary,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -203,50 +229,6 @@ class ReportCard extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ── Internal badge widget ─────────────────────────────────────────────────────
-
-class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({
-    required this.label,
-    required this.color,
-    required this.background,
-    required this.icon,
-  });
-
-  final String label;
-  final Color color;
-  final Color background;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: color,
-              letterSpacing: 0.2,
-            ),
-          ),
-        ],
       ),
     );
   }

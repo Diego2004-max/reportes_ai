@@ -224,7 +224,12 @@ class _ReportListScreenState extends State<ReportListScreen> {
           Expanded(
             child: _isLoading
                 ? ListView.builder(
-                    padding: const EdgeInsets.all(AppSpacing.screenH),
+                    padding: const EdgeInsets.only(
+                      left: AppSpacing.screenH,
+                      right: AppSpacing.screenH,
+                      top: AppSpacing.screenH,
+                      bottom: 120.0,
+                    ),
                     itemCount: 4,
                     itemBuilder: (_, __) => const Padding(
                       padding: EdgeInsets.only(bottom: AppSpacing.md),
@@ -252,7 +257,12 @@ class _ReportListScreenState extends State<ReportListScreen> {
                             await Future.delayed(
                                 const Duration(milliseconds: 800)),
                         child: ListView.builder(
-                          padding: const EdgeInsets.all(AppSpacing.screenH),
+                          padding: const EdgeInsets.only(
+                            left: AppSpacing.screenH,
+                            right: AppSpacing.screenH,
+                            top: AppSpacing.screenH,
+                            bottom: 120.0,
+                          ),
                           itemCount: reports.length,
                           itemBuilder: (context, index) {
                             final r = reports[index];
@@ -275,14 +285,6 @@ class _ReportListScreenState extends State<ReportListScreen> {
                       ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: navigate to create report
-        },
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.textOnPrimary,
-        child: const Icon(Icons.add_rounded),
       ),
     );
   }
