@@ -4,7 +4,7 @@ import '../../widgets/report_card.dart';
 import '../../widgets/custom_app_bar.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/loading_widget.dart';
-import '../../widgets/bottom_nav_bar.dart';
+import 'report_detail_screen.dart';
 
 /// Report List screen with search bar, filter chip row, and scrollable cards.
 /// UI only — no backend or navigation logic.
@@ -20,7 +20,6 @@ class _ReportListScreenState extends State<ReportListScreen> {
   String _selectedFilter = 'Todos';
   bool _isLoading = false;
   String _searchQuery = '';
-  int _navIndex = 1;
 
   static const List<String> _filters = [
     'Todos',
@@ -264,7 +263,11 @@ class _ReportListScreenState extends State<ReportListScreen> {
                               date: r['date']!,
                               category: r['category'],
                               onTap: () {
-                                // TODO: navigate to report detail
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const ReportDetailScreen()),
+                                );
                               },
                             );
                           },
@@ -280,10 +283,6 @@ class _ReportListScreenState extends State<ReportListScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.textOnPrimary,
         child: const Icon(Icons.add_rounded),
-      ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: _navIndex,
-        onTap: (i) => setState(() => _navIndex = i),
       ),
     );
   }

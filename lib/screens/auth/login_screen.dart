@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../theme/colors.dart';
 import '../../widgets/custom_textfield.dart';
 import '../../widgets/primary_button.dart';
+import '../main_screen.dart';
+import 'register_screen.dart';
 
 /// Login screen — centered layout with email/password fields,
 /// Google sign-in button, and a link to the register screen.
@@ -29,9 +31,14 @@ class _LoginScreenState extends State<LoginScreen> {
   void _onLogin() {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
-      // TODO: wire to authentication controller
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) setState(() => _isLoading = false);
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const MainScreen()),
+          );
+        }
       });
     }
   }
@@ -195,7 +202,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // Google button
                           _GoogleSignInButton(onPressed: () {
-                            // TODO: wire to Google auth controller
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const RegisterScreen()),
+                              );
                           }),
                         ],
                       ),
@@ -216,7 +227,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           TextButton(
                             onPressed: () {
-                              // TODO: navigate to register screen
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const RegisterScreen()),
+                              );
                             },
                             style: TextButton.styleFrom(
                               padding: EdgeInsets.zero,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/home/home_screen.dart';
+import 'theme/theme.dart';
+import 'screens/auth/login_screen.dart';
 
 void main() {
   runApp(const ReportesIAApp());
@@ -11,12 +12,9 @@ class ReportesIAApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Reportes IA',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
-      home: const HomeScreen(),
+      title: 'Reportes AI',
+      theme: AppTheme.light,
+      home: const LoginScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

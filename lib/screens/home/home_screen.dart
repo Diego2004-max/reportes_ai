@@ -5,6 +5,7 @@ import '../../widgets/report_card.dart';
 import '../../widgets/custom_app_bar.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/empty_state.dart';
+import '../reports/report_detail_screen.dart';
 
 /// Home (Dashboard) screen.
 /// Shows statistics cards, a recent reports section, and the bottom nav bar.
@@ -17,7 +18,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentNavIndex = 0;
 
   // ── Mock data (UI preview only) ───────────────────────────────────────────
   static const List<Map<String, String>> _recentReports = [
@@ -105,44 +105,43 @@ class _HomeScreenState extends State<HomeScreen> {
               Text('Resumen general',
                   style: theme.textTheme.titleLarge?.copyWith(fontSize: 18)),
               const SizedBox(height: AppSpacing.md),
-              SizedBox(
-                height: 140,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: const [
-                    _StatCardItem(
-                      label: 'Total',
-                      value: '24',
-                      icon: Icons.folder_open_rounded,
-                      iconColor: AppColors.primary,
-                      iconBg: AppColors.infoLight,
-                    ),
-                    SizedBox(width: AppSpacing.md),
-                    _StatCardItem(
-                      label: 'Pendientes',
-                      value: '8',
-                      icon: Icons.schedule_rounded,
-                      iconColor: AppColors.warning,
-                      iconBg: AppColors.warningLight,
-                    ),
-                    SizedBox(width: AppSpacing.md),
-                    _StatCardItem(
-                      label: 'En Proceso',
-                      value: '11',
-                      icon: Icons.autorenew_rounded,
-                      iconColor: AppColors.primary,
-                      iconBg: AppColors.infoLight,
-                    ),
-                    SizedBox(width: AppSpacing.md),
-                    _StatCardItem(
-                      label: 'Resueltos',
-                      value: '5',
-                      icon: Icons.check_circle_rounded,
-                      iconColor: AppColors.success,
-                      iconBg: AppColors.successLight,
-                    ),
-                  ],
-                ),
+              GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: AppSpacing.md,
+                crossAxisSpacing: AppSpacing.md,
+                childAspectRatio: 1.5,
+                children: const [
+                  _StatCardItem(
+                    label: 'Total',
+                    value: '24',
+                    icon: Icons.folder_open_rounded,
+                    iconColor: AppColors.primary,
+                    iconBg: AppColors.infoLight,
+                  ),
+                  _StatCardItem(
+                    label: 'Pendientes',
+                    value: '8',
+                    icon: Icons.schedule_rounded,
+                    iconColor: AppColors.warning,
+                    iconBg: AppColors.warningLight,
+                  ),
+                  _StatCardItem(
+                    label: 'En Proceso',
+                    value: '11',
+                    icon: Icons.autorenew_rounded,
+                    iconColor: AppColors.primary,
+                    iconBg: AppColors.infoLight,
+                  ),
+                  _StatCardItem(
+                    label: 'Resueltos',
+                    value: '5',
+                    icon: Icons.check_circle_rounded,
+                    iconColor: AppColors.success,
+                    iconBg: AppColors.successLight,
+                  ),
+                ],
               ),
 
               const SizedBox(height: AppSpacing.xxl),
@@ -217,12 +216,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   date: r['date']!,
                   category: r['category'],
                   onTap: () {
-                    // TODO: navigate to report detail
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const ReportDetailScreen()),
+                    );
                   },
                 ),
               ),
 
-              const SizedBox(height: AppSpacing.xxxl),
+              const SizedBox(height: 80), // Extra space for FAB
             ],
           ),
         ),
@@ -239,10 +242,6 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
         ),
         elevation: 4,
-      ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: _currentNavIndex,
-        onTap: (i) => setState(() => _currentNavIndex = i),
       ),
     );
   }
@@ -332,8 +331,7 @@ class _StatCardItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      width: 120,
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
@@ -349,20 +347,24 @@ class _StatCardItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            ),
-            child: Icon(icon, color: iconColor, size: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                ),
+                child: Icon(icon, color: iconColor, size: 20),
+              ),
+              Text(
+                value,
+                style: theme.textTheme.headlineMedium?.copyWith(fontSize: 24),
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            value,
-            style: theme.textTheme.headlineMedium?.copyWith(fontSize: 24),
-          ),
-          const SizedBox(height: AppSpacing.xs),
+          const SizedBox(height: AppSpacing.sm),
           Text(label, style: theme.textTheme.labelMedium),
         ],
       ),
