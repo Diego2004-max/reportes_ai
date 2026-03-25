@@ -17,10 +17,33 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = const [
     HomeScreen(),
-    ReportListScreen(),
     MapScreen(),
+    ReportListScreen(),
     ProfileScreen(),
   ];
+
+  void _handleNavigation(int index) {
+    if (index == 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Aquí irá crear reporte'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      if (index == 0) {
+        _currentIndex = 0; // Inicio
+      } else if (index == 1) {
+        _currentIndex = 1; // Mapa
+      } else if (index == 3) {
+        _currentIndex = 2; // Reportes
+      } else if (index == 4) {
+        _currentIndex = 3; // Perfil
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +55,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
       bottomNavigationBar: AppBottomNavBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onTap: _handleNavigation,
       ),
     );
   }
