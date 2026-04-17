@@ -1,59 +1,76 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
+import 'package:reportes_ai/data/local/hive/hive_service.dart';
 import 'package:reportes_ai/data/models/report_model.dart';
-import 'package:reportes_ai/data/repositories/report_repository_impl.dart';
-import 'package:reportes_ai/state/session_provider.dart';
 
-final reportRepositoryProvider = Provider<ReportRepositoryImpl>((ref) {
-  return ReportRepositoryImpl();
-});
-
-class ReportStats {
-  final int total;
-  final int submitted;
-  final int reviewing;
-  final int attended;
-
-  const ReportStats({
-    required this.total,
-    required this.submitted,
-    required this.reviewing,
-    required this.attended,
-  });
+abstract final class UserReportStatus {
+  static const String submitted = 'Enviado';
+  static const String reviewing = 'En revisión';
+  static const String attended = 'Atendido';
 }
 
-final userReportsProvider = FutureProvider<List<ReportModel>>((ref) async {
-  final session = ref.watch(sessionProvider);
-  final userId = session.userId;
+class ReportRepositoryImpl {
+  final Uuid _uuid = const Uuid();
 
-  if (!session.isAuthenticated || userId == null) {
-    return [];
+  Future<ReportModel> createReport({
+    required String userId,
+    required String title,
+    required String description,
+    required String category,
+    String status = UserReportStatus.submitted,
+    String? locationLabel,
+    double? latitude,
+    double? longitude,
+    List<String> imagePaths = const [],
+    String? audioPath,
+  }) async {
+    final report = ReportModel(
+      id: _uuid.v4(),
+      userId: userId,
+      title: title.trim(),
+      description: description.trim(),
+      category: category,
+      status: status,
+      createdAt: DateTime.now(),
+      locationLabel: locationLabel,
+      latitude: latitude,
+      longitude: longitude,
+      imagePaths: imagePaths,
+      audioPath: audioPath,
+    );
+
+    await HiveService.reportsBox.put(report.id, report.toMap());
+    return report;
   }
 
-  return ref.read(reportRepositoryProvider).getReportsByUserId(userId);
-});
+  Future<List<ReportModel>> getReportsByUserId(String userId) async {
+    final reports = HiveService.reportsBox.values
+        .map(
+          (raw) => ReportModel.fromMap(
+            Map<String, dynamic>.from(raw as Map),
+          ),
+        )
+        .where((report) => report.userId == userId)
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-final recentUserReportsProvider =
-    FutureProvider.family<List<ReportModel>, int>((ref, limit) async {
-  final reports = await ref.watch(userReportsProvider.future);
-
-  if (reports.length <= limit) {
     return reports;
   }
 
-  return reports.take(limit).toList();
-});
+  Future<List<ReportModel>> getAllReports() async {
+    final reports = HiveService.reportsBox.values
+        .map(
+          (raw) => ReportModel.fromMap(
+            Map<String, dynamic>.from(raw as Map),
+          ),
+        )
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-final userReportStatsProvider = FutureProvider<ReportStats>((ref) async {
-  final reports = await ref.watch(userReportsProvider.future);
+    return reports;
+  }
 
-  return ReportStats(
-    total: reports.length,
-    submitted:
-        reports.where((r) => r.status == UserReportStatus.submitted).length,
-    reviewing:
-        reports.where((r) => r.status == UserReportStatus.reviewing).length,
-    attended:
-        reports.where((r) => r.status == UserReportStatus.attended).length,
-  );
-});
+  Future<void> deleteReport(String reportId) async {
+    await HiveService.reportsBox.delete(reportId);
+  }
+}
