@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 
-import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
+import 'package:reportes_ai/core/services/location_service.dart';
 import 'package:reportes_ai/shared/widgets/custom_textfield.dart';
 import 'package:reportes_ai/shared/widgets/primary_button.dart';
 import 'package:reportes_ai/state/report_provider.dart';
@@ -19,9 +20,14 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final LocationService _locationService = LocationService();
 
   bool _isLoading = false;
+  bool _isGettingLocation = false;
   String _selectedCategory = 'Infraestructura';
+
+  Position? _currentPosition;
+  String? _locationLabel;
 
   final List<String> _categories = const [
     'Infraestructura',
@@ -33,10 +39,42 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _loadCurrentLocation();
+  }
+
+  @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCurrentLocation() async {
+    setState(() => _isGettingLocation = true);
+
+    try {
+      final position = await _locationService.getCurrentLocation();
+
+      if (!mounted) return;
+
+      setState(() {
+        _currentPosition = position;
+        _locationLabel =
+            'Lat ${position.latitude.toStringAsFixed(5)}, Lng ${position.longitude.toStringAsFixed(5)}';
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo obtener ubicación: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isGettingLocation = false);
+      }
+    }
   }
 
   Future<void> _submitReport() async {
@@ -60,10 +98,14 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
             title: _titleController.text,
             description: _descriptionController.text,
             category: _selectedCategory,
+            locationLabel: _locationLabel,
+            latitude: _currentPosition?.latitude,
+            longitude: _currentPosition?.longitude,
           );
 
       ref.invalidate(userReportsProvider);
       ref.invalidate(userReportStatsProvider);
+      ref.invalidate(allReportsProvider);
 
       if (!mounted) return;
 
@@ -82,7 +124,7 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Crear reporte'),
         centerTitle: false,
@@ -103,10 +145,8 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Registra un reporte ciudadano real. El sistema lo guardará en tu historial.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  'Registra un reporte ciudadano y guárdalo con tu ubicación actual.',
+                  style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 CustomTextField(
@@ -127,9 +167,12 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: Theme.of(context).cardTheme.color ??
+                        Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(
+                      color: Theme.of(context).dividerColor,
+                    ),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
@@ -160,6 +203,52 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                     }
                     return null;
                   },
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardTheme.color ??
+                        Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    border: Border.all(
+                      color: Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ubicación del reporte',
+                        style: theme.textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      if (_isGettingLocation)
+                        const Row(
+                          children: [
+                            SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            SizedBox(width: AppSpacing.sm),
+                            Text('Obteniendo ubicación actual...'),
+                          ],
+                        )
+                      else
+                        Text(
+                          _locationLabel ?? 'Sin ubicación capturada',
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      const SizedBox(height: AppSpacing.md),
+                      OutlinedButton.icon(
+                        onPressed: _isGettingLocation ? null : _loadCurrentLocation,
+                        icon: const Icon(Icons.my_location_rounded),
+                        label: const Text('Actualizar ubicación'),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 PrimaryButton(
