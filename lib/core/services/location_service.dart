@@ -1,3 +1,4 @@
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
 class LocationService {
@@ -37,5 +38,37 @@ class LocationService {
     return Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
+  }
+
+  Future<String?> getReadableAddress({
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      final placemarks = await placemarkFromCoordinates(latitude, longitude);
+
+      if (placemarks.isEmpty) {
+        return null;
+      }
+
+      final place = placemarks.first;
+
+      final parts = <String>[
+        if ((place.street ?? '').trim().isNotEmpty) place.street!.trim(),
+        if ((place.subLocality ?? '').trim().isNotEmpty)
+          place.subLocality!.trim(),
+        if ((place.locality ?? '').trim().isNotEmpty) place.locality!.trim(),
+        if ((place.administrativeArea ?? '').trim().isNotEmpty)
+          place.administrativeArea!.trim(),
+      ];
+
+      if (parts.isEmpty) {
+        return null;
+      }
+
+      return parts.join(', ');
+    } catch (_) {
+      return null;
+    }
   }
 }

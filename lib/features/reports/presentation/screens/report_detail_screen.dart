@@ -86,6 +86,24 @@ class ReportDetailScreen extends ConsumerWidget {
                 ),
               ),
             ],
+            if (report.audioPath != null) ...[
+              const SizedBox(height: AppSpacing.lg),
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Audio adjunto',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    const Text(
+                      'Este reporte contiene una grabación de voz guardada.',
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: AppSpacing.xxl),
             PrimaryButton(
               label: 'Eliminar reporte',

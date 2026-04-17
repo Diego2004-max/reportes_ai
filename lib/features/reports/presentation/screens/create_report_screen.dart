@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 
 import 'package:reportes_ai/app/theme/app_spacing.dart';
 import 'package:reportes_ai/core/services/location_service.dart';
+import 'package:reportes_ai/core/services/voice_service.dart';
 import 'package:reportes_ai/shared/widgets/custom_textfield.dart';
 import 'package:reportes_ai/shared/widgets/primary_button.dart';
 import 'package:reportes_ai/state/report_provider.dart';
@@ -21,13 +22,17 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final LocationService _locationService = LocationService();
+  final VoiceService _voiceService = VoiceService();
 
   bool _isLoading = false;
   bool _isGettingLocation = false;
+  bool _isRecording = false;
+
   String _selectedCategory = 'Infraestructura';
 
   Position? _currentPosition;
   String? _locationLabel;
+  String? _audioPath;
 
   final List<String> _categories = const [
     'Infraestructura',
@@ -48,6 +53,7 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _voiceService.dispose();
     super.dispose();
   }
 
@@ -56,12 +62,16 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
 
     try {
       final position = await _locationService.getCurrentLocation();
+      final address = await _locationService.getReadableAddress(
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
 
       if (!mounted) return;
 
       setState(() {
         _currentPosition = position;
-        _locationLabel =
+        _locationLabel = address ??
             'Lat ${position.latitude.toStringAsFixed(5)}, Lng ${position.longitude.toStringAsFixed(5)}';
       });
     } catch (e) {
@@ -74,6 +84,45 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
       if (mounted) {
         setState(() => _isGettingLocation = false);
       }
+    }
+  }
+
+  Future<void> _toggleRecording() async {
+    try {
+      if (_isRecording) {
+        final path = await _voiceService.stopRecording();
+
+        if (!mounted) return;
+
+        setState(() {
+          _isRecording = false;
+          _audioPath = path;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Audio grabado correctamente')),
+        );
+      } else {
+        await _voiceService.startRecording();
+
+        if (!mounted) return;
+
+        setState(() {
+          _isRecording = true;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Grabación iniciada')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() => _isRecording = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo grabar audio: $e')),
+      );
     }
   }
 
@@ -101,6 +150,7 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
             locationLabel: _locationLabel,
             latitude: _currentPosition?.latitude,
             longitude: _currentPosition?.longitude,
+            audioPath: _audioPath,
           );
 
       ref.invalidate(userReportsProvider);
@@ -124,7 +174,7 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Crear reporte'),
         centerTitle: false,
@@ -145,7 +195,7 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Registra un reporte ciudadano y guárdalo con tu ubicación actual.',
+                  'Registra un reporte ciudadano con ubicación y evidencia de voz.',
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: AppSpacing.xl),
@@ -167,12 +217,9 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).cardTheme.color ??
-                        Theme.of(context).colorScheme.surface,
+                    color: theme.cardTheme.color ?? theme.colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Theme.of(context).dividerColor,
-                    ),
+                    border: Border.all(color: theme.dividerColor),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
@@ -209,12 +256,9 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).cardTheme.color ??
-                        Theme.of(context).colorScheme.surface,
+                    color: theme.cardTheme.color ?? theme.colorScheme.surface,
                     borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                    border: Border.all(
-                      color: Theme.of(context).dividerColor,
-                    ),
+                    border: Border.all(color: theme.dividerColor),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,15 +281,66 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                           ],
                         )
                       else
-                        Text(
-                          _locationLabel ?? 'Sin ubicación capturada',
-                          style: theme.textTheme.bodyMedium,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _locationLabel ?? 'Sin ubicación capturada',
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                            if (_currentPosition != null) ...[
+                              const SizedBox(height: AppSpacing.xs),
+                              Text(
+                                'Lat ${_currentPosition!.latitude.toStringAsFixed(5)}, Lng ${_currentPosition!.longitude.toStringAsFixed(5)}',
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ],
+                          ],
                         ),
                       const SizedBox(height: AppSpacing.md),
                       OutlinedButton.icon(
-                        onPressed: _isGettingLocation ? null : _loadCurrentLocation,
+                        onPressed:
+                            _isGettingLocation ? null : _loadCurrentLocation,
                         icon: const Icon(Icons.my_location_rounded),
                         label: const Text('Actualizar ubicación'),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    color: theme.cardTheme.color ?? theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    border: Border.all(color: theme.dividerColor),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Audio del reporte',
+                        style: theme.textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        _audioPath == null
+                            ? 'Aún no has grabado audio'
+                            : 'Audio adjunto correctamente',
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      FilledButton.icon(
+                        onPressed: _toggleRecording,
+                        icon: Icon(
+                          _isRecording ? Icons.stop_rounded : Icons.mic_rounded,
+                        ),
+                        label: Text(
+                          _isRecording
+                              ? 'Detener grabación'
+                              : 'Grabar audio',
+                        ),
                       ),
                     ],
                   ),
