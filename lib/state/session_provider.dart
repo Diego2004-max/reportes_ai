@@ -77,4 +77,10 @@ class SessionNotifier extends Notifier<SessionState> {
     await HiveService.clearSession();
     state = SessionState.initial();
   }
+
+  Future<void> updateUserName(String userName) async {
+    await HiveService.sessionBox.put(HiveKeys.userName, userName);
+    
+    state = state.copyWith(userName: userName);
+  }
 }
