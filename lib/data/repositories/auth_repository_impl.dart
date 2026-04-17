@@ -1,35 +1,79 @@
-class UserModel {
-  final String id;
-  final String fullName;
-  final String email;
-  final String password;
-  final DateTime createdAt;
+import 'package:uuid/uuid.dart';
 
-  const UserModel({
-    required this.id,
-    required this.fullName,
-    required this.email,
-    required this.password,
-    required this.createdAt,
-  });
+import 'package:reportes_ai/data/local/hive/hive_service.dart';
+import 'package:reportes_ai/data/models/user_model.dart';
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'fullName': fullName,
-      'email': email,
-      'password': password,
-      'createdAt': createdAt.toIso8601String(),
-    };
+class AuthRepositoryImpl {
+  final Uuid _uuid = const Uuid();
+
+  Future<UserModel> register({
+    required String fullName,
+    required String email,
+    required String password,
+  }) async {
+    final normalizedEmail = email.trim().toLowerCase();
+
+    for (final raw in HiveService.usersBox.values) {
+      final user = UserModel.fromMap(Map<String, dynamic>.from(raw as Map));
+      if (user.email.toLowerCase() == normalizedEmail) {
+        throw Exception('Ese correo ya está registrado');
+      }
+    }
+
+    final user = UserModel(
+      id: _uuid.v4(),
+      fullName: fullName.trim(),
+      email: normalizedEmail,
+      password: password,
+      createdAt: DateTime.now(),
+    );
+
+    await HiveService.usersBox.put(user.id, user.toMap());
+    return user;
   }
 
-  factory UserModel.fromMap(Map<String, dynamic> map) {
-    return UserModel(
-      id: map['id'] as String,
-      fullName: map['fullName'] as String,
-      email: map['email'] as String,
-      password: map['password'] as String,
-      createdAt: DateTime.parse(map['createdAt'] as String),
+  Future<UserModel> login({
+    required String email,
+    required String password,
+  }) async {
+    final normalizedEmail = email.trim().toLowerCase();
+
+    for (final raw in HiveService.usersBox.values) {
+      final user = UserModel.fromMap(Map<String, dynamic>.from(raw as Map));
+      if (user.email.toLowerCase() == normalizedEmail &&
+          user.password == password) {
+        return user;
+      }
+    }
+
+    throw Exception('Correo o contraseña incorrectos');
+  }
+
+  Future<UserModel?> getUserById(String userId) async {
+    final raw = HiveService.usersBox.get(userId);
+    if (raw == null) return null;
+
+    return UserModel.fromMap(Map<String, dynamic>.from(raw as Map));
+  }
+
+  Future<UserModel> updateUserName({
+    required String userId,
+    required String newName,
+  }) async {
+    final current = await getUserById(userId);
+    if (current == null) {
+      throw Exception('Usuario no encontrado');
+    }
+
+    final updated = UserModel(
+      id: current.id,
+      fullName: newName.trim(),
+      email: current.email,
+      password: current.password,
+      createdAt: current.createdAt,
     );
+
+    await HiveService.usersBox.put(updated.id, updated.toMap());
+    return updated;
   }
 }

@@ -31,7 +31,7 @@ class _ReportListScreenState extends ConsumerState<ReportListScreen> {
     'Atendido',
   ];
 
-  List<ReportModel> _applyFilters(List<ReportModel> reports) {
+    List<ReportModel> _applyFilters(List<ReportModel> reports) {
     return reports.where((report) {
       final matchesFilter =
           _selectedFilter == 'Todos' || report.status == _selectedFilter;

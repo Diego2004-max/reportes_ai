@@ -36,7 +36,11 @@ final userReportsProvider = FutureProvider<List<ReportModel>>((ref) async {
 final recentUserReportsProvider =
     FutureProvider.family<List<ReportModel>, int>((ref, limit) async {
   final reports = await ref.watch(userReportsProvider.future);
-  if (reports.length <= limit) return reports;
+
+  if (reports.length <= limit) {
+    return reports;
+  }
+
   return reports.take(limit).toList();
 });
 
@@ -45,14 +49,11 @@ final userReportStatsProvider = FutureProvider<ReportStats>((ref) async {
 
   return ReportStats(
     total: reports.length,
-    submitted: reports
-        .where((r) => r.status == UserReportStatus.submitted)
-        .length,
-    reviewing: reports
-        .where((r) => r.status == UserReportStatus.reviewing)
-        .length,
-    attended: reports
-        .where((r) => r.status == UserReportStatus.attended)
-        .length,
+    submitted:
+        reports.where((r) => r.status == UserReportStatus.submitted).length,
+    reviewing:
+        reports.where((r) => r.status == UserReportStatus.reviewing).length,
+    attended:
+        reports.where((r) => r.status == UserReportStatus.attended).length,
   );
 });

@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
-import 'package:reportes_ai/data/repositories/report_repository_impl.dart';
 
 abstract final class ReportStatus {
-  static const String submitted = UserReportStatus.submitted;
-  static const String reviewing = UserReportStatus.reviewing;
-  static const String attended = UserReportStatus.attended;
+  static const String submitted = 'Enviado';
+  static const String reviewing = 'En revisión';
+  static const String attended = 'Atendido';
 }
 
 extension ReportStatusColor on String {
@@ -137,8 +136,11 @@ class ReportCard extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(status.statusIcon,
-                              size: 14, color: status.statusColor),
+                          Icon(
+                            status.statusIcon,
+                            size: 14,
+                            color: status.statusColor,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             status,

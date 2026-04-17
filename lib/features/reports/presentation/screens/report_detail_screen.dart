@@ -34,7 +34,10 @@ class ReportDetailScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(report.title, style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    report.title,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(report.category),
                   const SizedBox(height: AppSpacing.sm),
@@ -51,8 +54,10 @@ class ReportDetailScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Descripción',
-                      style: Theme.of(context).textTheme.titleMedium),
+                  Text(
+                    'Descripción',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(report.description),
                 ],
@@ -64,8 +69,10 @@ class ReportDetailScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Ubicación',
-                        style: Theme.of(context).textTheme.titleMedium),
+                    Text(
+                      'Ubicación',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(report.locationLabel!),
                   ],
@@ -78,10 +85,7 @@ class ReportDetailScreen extends ConsumerWidget {
               backgroundColor: AppColors.errorLight,
               foregroundColor: AppColors.error,
               onPressed: () async {
-                await ref
-                    .read(reportRepositoryProvider)
-                    .deleteReport(report.id);
-
+                await ref.read(reportRepositoryProvider).deleteReport(report.id);
                 ref.invalidate(userReportsProvider);
                 ref.invalidate(userReportStatsProvider);
 

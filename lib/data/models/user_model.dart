@@ -1,32 +1,35 @@
-import 'package:hive_flutter/hive_flutter.dart';
+class UserModel {
+  final String id;
+  final String fullName;
+  final String email;
+  final String password;
+  final DateTime createdAt;
 
-import '../../../core/constants/hive_boxes.dart';
+  const UserModel({
+    required this.id,
+    required this.fullName,
+    required this.email,
+    required this.password,
+    required this.createdAt,
+  });
 
-abstract final class HiveService {
-  static Future<void> init() async {
-    await Hive.initFlutter();
-    await _openCoreBoxes();
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'fullName': fullName,
+      'email': email,
+      'password': password,
+      'createdAt': createdAt.toIso8601String(),
+    };
   }
 
-  static Future<void> _openCoreBoxes() async {
-    await Future.wait([
-      Hive.openBox(HiveBoxes.settings),
-      Hive.openBox(HiveBoxes.session),
-      Hive.openBox(HiveBoxes.users),
-      Hive.openBox(HiveBoxes.reports),
-      Hive.openBox(HiveBoxes.reportDrafts),
-      Hive.openBox(HiveBoxes.reportCache),
-    ]);
-  }
-
-  static Box<dynamic> get settingsBox => Hive.box(HiveBoxes.settings);
-  static Box<dynamic> get sessionBox => Hive.box(HiveBoxes.session);
-  static Box<dynamic> get usersBox => Hive.box(HiveBoxes.users);
-  static Box<dynamic> get reportsBox => Hive.box(HiveBoxes.reports);
-  static Box<dynamic> get reportDraftsBox => Hive.box(HiveBoxes.reportDrafts);
-  static Box<dynamic> get reportCacheBox => Hive.box(HiveBoxes.reportCache);
-
-  static Future<void> clearSession() async {
-    await sessionBox.clear();
+  factory UserModel.fromMap(Map<String, dynamic> map) {
+    return UserModel(
+      id: map['id'] as String,
+      fullName: map['fullName'] as String,
+      email: map['email'] as String,
+      password: map['password'] as String,
+      createdAt: DateTime.parse(map['createdAt'] as String),
+    );
   }
 }
