@@ -4,18 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/constants/hive_boxes.dart';
 import '../data/local/hive/hive_service.dart';
 
-final themeProvider =
-    StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
-  return ThemeNotifier()..loadTheme();
-});
+final themeProvider = NotifierProvider<ThemeNotifier, ThemeMode>(
+  ThemeNotifier.new,
+);
 
-class ThemeNotifier extends StateNotifier<ThemeMode> {
-  ThemeNotifier() : super(ThemeMode.system);
-
-  Future<void> loadTheme() async {
+class ThemeNotifier extends Notifier<ThemeMode> {
+  @override
+  ThemeMode build() {
     final storedMode =
         HiveService.settingsBox.get(HiveKeys.themeMode) as String?;
-    state = _parseThemeMode(storedMode);
+    return _parseThemeMode(storedMode);
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {

@@ -3,10 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/constants/hive_boxes.dart';
 import '../data/local/hive/hive_service.dart';
 
-final sessionProvider =
-    StateNotifierProvider<SessionNotifier, SessionState>((ref) {
-  return SessionNotifier()..hydrate();
-});
+final sessionProvider = NotifierProvider<SessionNotifier, SessionState>(
+  SessionNotifier.new,
+);
 
 class SessionState {
   final bool isAuthenticated;
@@ -40,16 +39,15 @@ class SessionState {
   }
 }
 
-class SessionNotifier extends StateNotifier<SessionState> {
-  SessionNotifier() : super(SessionState.initial());
-
-  Future<void> hydrate() async {
+class SessionNotifier extends Notifier<SessionState> {
+  @override
+  SessionState build() {
     final box = HiveService.sessionBox;
 
     final isLoggedIn =
         (box.get(HiveKeys.isLoggedIn, defaultValue: false) as bool?) ?? false;
 
-    state = SessionState(
+    return SessionState(
       isAuthenticated: isLoggedIn,
       userId: box.get(HiveKeys.userId) as String?,
       email: box.get(HiveKeys.userEmail) as String?,

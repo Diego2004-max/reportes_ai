@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/colors.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/custom_textfield.dart';
+import 'package:reportes_ai/app/theme/app_colors.dart';
+import 'package:reportes_ai/app/theme/app_spacing.dart';
 
 class CreateReportScreen extends StatefulWidget {
   const CreateReportScreen({super.key});
@@ -79,8 +80,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               ),
               const SizedBox(height: AppSpacing.sm),
               CustomTextField(
+                label: 'Título',
                 controller: _titleController,
-                hintText: 'Ej: Hueco grande en la avenida',
+                hint: 'Ej: Hueco grande en la avenida',
               ),
               const SizedBox(height: AppSpacing.lg),
 
@@ -124,8 +126,9 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
               ),
               const SizedBox(height: AppSpacing.sm),
               CustomTextField(
+                label: 'Descripción',
                 controller: _descriptionController,
-                hintText: 'Describe lo ocurrido...',
+                hint: 'Describe lo ocurrido...',
                 maxLines: 5,
               ),
               const SizedBox(height: AppSpacing.xl),
@@ -141,7 +144,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: PrimaryButton(
-                      text: 'Enviar reporte',
+                      label: 'Enviar reporte',
                       onPressed: _submitReport,
                     ),
                   ),

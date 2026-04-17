@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/colors.dart';
 import '../../../../shared/widgets/app_card.dart';
 import '../../../../shared/widgets/custom_app_bar.dart';
 import '../../../../shared/widgets/primary_button.dart';
+import 'package:reportes_ai/app/theme/app_colors.dart';
+import 'package:reportes_ai/app/theme/app_spacing.dart';
 
 /// Report Detail screen — shows full report info in structured card sections.
 /// UI only — edit/delete/navigate actions have TODO placeholders.

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../theme/colors.dart';
-import '../../theme/colors.dart' show AppSpacing;
+import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_spacing.dart' show AppSpacing;
 
 /// Status label constants shared across the app.
 abstract final class ReportStatus {

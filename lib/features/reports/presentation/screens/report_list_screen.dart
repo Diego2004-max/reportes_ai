@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/colors.dart';
 import '../../../../shared/widgets/report_card.dart';
 import '../../../../shared/widgets/custom_app_bar.dart';
 import '../../../../shared/widgets/empty_state.dart';
 import '../../../../shared/widgets/loading_widget.dart';
 import 'report_detail_screen.dart';
+import 'package:reportes_ai/app/theme/app_colors.dart';
+import 'package:reportes_ai/app/theme/app_spacing.dart';
 
 /// Report List screen with search bar, filter chip row, and scrollable cards.
 /// UI only — no backend or navigation logic.

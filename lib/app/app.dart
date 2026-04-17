@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'router/app_router.dart';
-import 'theme/app_theme.dart';
+import '../app/theme/app.theme.dart';
 import '../state/theme_provider.dart';
 
 class AiReportsApp extends ConsumerWidget {

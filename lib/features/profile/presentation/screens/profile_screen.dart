@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../../theme/colors.dart';
 import '../../../../shared/widgets/custom_app_bar.dart';
 import '../../../../shared/widgets/app_card.dart';
-
+import 'package:reportes_ai/app/theme/app_colors.dart';
+import 'package:reportes_ai/app/theme/app_spacing.dart';
 /// App settings and user profile screen.
 /// Shows user info header, stats row, and a list of menu options.
 /// UI only — no backend logic.

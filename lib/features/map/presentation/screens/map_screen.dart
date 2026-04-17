@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../core/services/location_service.dart';
-import '../../../../theme/colors.dart';
+import '../../../../app/theme/app_colors.dart';
 import '../../../../shared/widgets/app_card.dart';
+import 'package:reportes_ai/app/theme/app_colors.dart';
+import 'package:reportes_ai/app/theme/app_spacing.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});

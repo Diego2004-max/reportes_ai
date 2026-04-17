@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../theme/colors.dart';
-import '../../theme/colors.dart' show AppSpacing;
+import '../../app/theme/app_colors.dart';
+import '../../app/theme/app_spacing.dart';
 
 /// White surface card with soft shadow and rounded corners.
 /// Use instead of raw [Card] for all grouped-content areas.
