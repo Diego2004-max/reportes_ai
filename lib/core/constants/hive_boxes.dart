@@ -1,6 +1,8 @@
 abstract final class HiveBoxes {
   static const String settings = 'settings';
   static const String session = 'session';
+  static const String users = 'users';
+  static const String reports = 'reports';
   static const String reportDrafts = 'report_drafts';
   static const String reportCache = 'report_cache';
 }

@@ -12,6 +12,8 @@ abstract final class HiveService {
     await Future.wait([
       Hive.openBox(HiveBoxes.settings),
       Hive.openBox(HiveBoxes.session),
+      Hive.openBox(HiveBoxes.users),
+      Hive.openBox(HiveBoxes.reports),
       Hive.openBox(HiveBoxes.reportDrafts),
       Hive.openBox(HiveBoxes.reportCache),
     ]);
@@ -19,19 +21,12 @@ abstract final class HiveService {
 
   static Box<dynamic> get settingsBox => Hive.box(HiveBoxes.settings);
   static Box<dynamic> get sessionBox => Hive.box(HiveBoxes.session);
+  static Box<dynamic> get usersBox => Hive.box(HiveBoxes.users);
+  static Box<dynamic> get reportsBox => Hive.box(HiveBoxes.reports);
   static Box<dynamic> get reportDraftsBox => Hive.box(HiveBoxes.reportDrafts);
   static Box<dynamic> get reportCacheBox => Hive.box(HiveBoxes.reportCache);
 
   static Future<void> clearSession() async {
     await sessionBox.clear();
-  }
-
-  static Future<void> clearAllLocalData() async {
-    await Future.wait([
-      settingsBox.clear(),
-      sessionBox.clear(),
-      reportDraftsBox.clear(),
-      reportCacheBox.clear(),
-    ]);
   }
 }
