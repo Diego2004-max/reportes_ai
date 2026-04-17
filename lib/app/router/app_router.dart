@@ -1,9 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/auth/presentation/screens/login_screen.dart';
-import '../../features/auth/presentation/screens/register_screen.dart';
-import '../../features/shell/presentation/screens/main_screen.dart';
+import 'package:reportes_ai/features/auth/presentation/screens/login_screen.dart';
+import 'package:reportes_ai/features/auth/presentation/screens/register_screen.dart';
+import 'package:reportes_ai/features/shell/presentation/screens/main_screen.dart';
+import 'package:reportes_ai/state/session_provider.dart';
 
 abstract final class AppRoutes {
   static const String login = '/login';
@@ -12,6 +13,9 @@ abstract final class AppRoutes {
 }
 
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final session = ref.watch(sessionProvider);
+  final isAuthenticated = session.isAuthenticated;
+
   return GoRouter(
     initialLocation: AppRoutes.login,
     routes: [
@@ -31,5 +35,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const MainScreen(),
       ),
     ],
+    redirect: (context, state) {
+      final location = state.matchedLocation;
+      final isAuthRoute =
+          location == AppRoutes.login || location == AppRoutes.register;
+
+      if (!isAuthenticated && !isAuthRoute) {
+        return AppRoutes.login;
+      }
+
+      if (isAuthenticated && isAuthRoute) {
+        return AppRoutes.app;
+      }
+
+      return null;
+    },
   );
 });
