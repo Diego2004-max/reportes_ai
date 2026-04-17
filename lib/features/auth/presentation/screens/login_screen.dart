@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../../shell/presentation/screens/main_screen.dart';
-import '../../../../shared/widgets/custom_textfield.dart';
-import '../../../../shared/widgets/primary_button.dart';
-import 'register_screen.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:reportes_ai/app/router/app_router.dart';
 import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
+import 'package:reportes_ai/shared/widgets/custom_textfield.dart';
+import 'package:reportes_ai/shared/widgets/primary_button.dart';
 
 /// Login screen — centered layout with email/password fields,
 /// Google sign-in button, and a link to the register screen.
-/// UI only: no navigation or auth logic is implemented here.
+/// UI only: no real auth logic yet.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -18,7 +19,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailCtrl    = TextEditingController();
+  final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _isLoading = false;
 
@@ -32,22 +33,24 @@ class _LoginScreenState extends State<LoginScreen> {
   void _onLogin() {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
+
       Future.delayed(const Duration(seconds: 1), () {
-        if (mounted) {
-          setState(() => _isLoading = false);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const MainScreen()),
-          );
-        }
+        if (!mounted) return;
+
+        setState(() => _isLoading = false);
+        context.go(AppRoutes.app);
       });
     }
+  }
+
+  void _goToRegister() {
+    context.push(AppRoutes.register);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final size  = MediaQuery.of(context).size;
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -64,12 +67,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const SizedBox(height: AppSpacing.huge),
 
-                    // ── Brand ─────────────────────────────────────────────
                     _BrandHeader(),
 
                     const SizedBox(height: AppSpacing.xxxl),
 
-                    // ── Card container ────────────────────────────────────
                     Container(
                       padding: const EdgeInsets.all(AppSpacing.xxl),
                       decoration: BoxDecoration(
@@ -96,10 +97,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             'Inicia sesión para continuar',
                             style: theme.textTheme.bodyMedium,
                           ),
-
                           const SizedBox(height: AppSpacing.xxl),
 
-                          // Email
                           CustomTextField(
                             label: 'Correo electrónico',
                             hint: 'tu@correo.com',
@@ -117,7 +116,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 return 'Ingresa tu correo';
                               }
                               final emailReg = RegExp(
-                                  r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$');
+                                r'^[\w\-\.]+@([\w\-]+\.)+[\w]{2,4}$',
+                              );
                               if (!emailReg.hasMatch(v)) {
                                 return 'Correo no válido';
                               }
@@ -127,7 +127,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           const SizedBox(height: AppSpacing.lg),
 
-                          // Password
                           CustomTextField(
                             label: 'Contraseña',
                             hint: '••••••••',
@@ -154,12 +153,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           const SizedBox(height: AppSpacing.sm),
 
-                          // Forgot password
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
                               onPressed: () {
-                                // TODO: navigate to forgot password
                               },
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
@@ -172,7 +169,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           const SizedBox(height: AppSpacing.xl),
 
-                          // Login button
                           PrimaryButton(
                             label: 'Iniciar Sesión',
                             onPressed: _onLogin,
@@ -181,44 +177,42 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           const SizedBox(height: AppSpacing.lg),
 
-                          // Divider
                           Row(
                             children: [
                               const Expanded(
-                                  child: Divider(color: AppColors.border)),
+                                child: Divider(color: AppColors.border),
+                              ),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.md),
+                                  horizontal: AppSpacing.md,
+                                ),
                                 child: Text(
                                   'o continúa con',
                                   style: theme.textTheme.labelMedium,
                                 ),
                               ),
                               const Expanded(
-                                  child: Divider(color: AppColors.border)),
+                                child: Divider(color: AppColors.border),
+                              ),
                             ],
                           ),
 
                           const SizedBox(height: AppSpacing.lg),
 
-                          // Google button
-                          _GoogleSignInButton(onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => const RegisterScreen()),
-                              );
-                          }),
+                          _GoogleSignInButton(
+                            onPressed: () {
+                            },
+                          ),
                         ],
                       ),
                     ),
 
                     const Spacer(),
 
-                    // ── Footer link ───────────────────────────────────────
                     Padding(
-                      padding:
-                          const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.xl,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -227,13 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: theme.textTheme.bodyMedium,
                           ),
                           TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => const RegisterScreen()),
-                              );
-                            },
+                            onPressed: _goToRegister,
                             style: TextButton.styleFrom(
                               padding: EdgeInsets.zero,
                               tapTargetSize:
@@ -255,14 +243,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// ── Private sub-widgets ───────────────────────────────────────────────────────
-
 class _BrandHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Logo circle
         Container(
           width: 72,
           height: 72,
@@ -300,7 +285,10 @@ class _BrandHeader extends StatelessWidget {
         const SizedBox(height: AppSpacing.xs),
         const Text(
           'Gestión inteligente de reportes',
-          style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+          style: TextStyle(
+            fontSize: 14,
+            color: AppColors.textSecondary,
+          ),
         ),
       ],
     );
@@ -315,6 +303,7 @@ class _GoogleSignInButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return SizedBox(
       height: AppSpacing.buttonHeight,
       child: OutlinedButton(
@@ -330,7 +319,6 @@ class _GoogleSignInButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Google "G" icon via Unicode symbol
             Container(
               width: 20,
               height: 20,
