@@ -1,88 +1,46 @@
 import 'package:flutter/material.dart';
-import '../../../../shared/widgets/report_card.dart';
-import '../../../../shared/widgets/custom_app_bar.dart';
-import '../../../../shared/widgets/empty_state.dart';
-import '../../../../shared/widgets/loading_widget.dart';
-import 'report_detail_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
+import 'package:reportes_ai/data/models/report_model.dart';
+import 'package:reportes_ai/shared/widgets/custom_app_bar.dart';
+import 'package:reportes_ai/shared/widgets/empty_state.dart';
+import 'package:reportes_ai/shared/widgets/loading_widget.dart';
+import 'package:reportes_ai/shared/widgets/report_card.dart';
+import 'package:reportes_ai/state/report_provider.dart';
 
-/// Report List screen with search bar, filter chip row, and scrollable cards.
-/// UI only — no backend or navigation logic.
-class ReportListScreen extends StatefulWidget {
+import 'report_detail_screen.dart';
+
+class ReportListScreen extends ConsumerStatefulWidget {
   const ReportListScreen({super.key});
 
   @override
-  State<ReportListScreen> createState() => _ReportListScreenState();
+  ConsumerState<ReportListScreen> createState() => _ReportListScreenState();
 }
 
-class _ReportListScreenState extends State<ReportListScreen> {
+class _ReportListScreenState extends ConsumerState<ReportListScreen> {
   final _searchCtrl = TextEditingController();
   String _selectedFilter = 'Todos';
-  final bool _isLoading = false;
   String _searchQuery = '';
 
   static const List<String> _filters = [
     'Todos',
-    'Pendiente',
-    'En Proceso',
-    'Resuelto',
-    'Rechazado',
+    'Enviado',
+    'En revisión',
+    'Atendido',
   ];
 
-  static const List<Map<String, String>> _allReports = [
-    {
-      'title': 'Bache en Avenida Principal',
-      'description':
-          'Gran bache en la vía principal que afecta la circulación vehicular.',
-      'status': 'En Proceso',
-      'date': '24 Mar 2026',
-      'category': 'Infraestructura',
-    },
-    {
-      'title': 'Fuga de agua en Calle 5',
-      'description': 'Tubería rota generando acumulación de agua.',
-      'status': 'Pendiente',
-      'date': '23 Mar 2026',
-      'category': 'Servicios Públicos',
-    },
-    {
-      'title': 'Luminaria dañada Parque Central',
-      'description': 'Alumbrado público sin funcionamiento en el parque.',
-      'status': 'Resuelto',
-      'date': '21 Mar 2026',
-      'category': 'Alumbrado',
-    },
-    {
-      'title': 'Basura acumulada Cra 12',
-      'description': 'Acumulación de residuos sólidos sin recolectar.',
-      'status': 'Pendiente',
-      'date': '20 Mar 2026',
-      'category': 'Aseo',
-    },
-    {
-      'title': 'Semáforo averiado Calle 15',
-      'description': 'El semáforo no funciona generando riesgo vial.',
-      'status': 'Rechazado',
-      'date': '19 Mar 2026',
-      'category': 'Tránsito',
-    },
-    {
-      'title': 'Árbol caído Barrio Norte',
-      'description': 'Árbol caído bloqueando la vía principal del barrio.',
-      'status': 'Resuelto',
-      'date': '18 Mar 2026',
-      'category': 'Espacio Público',
-    },
-  ];
-
-  List<Map<String, String>> get _filteredReports {
-    return _allReports.where((r) {
+  List<ReportModel> _applyFilters(List<ReportModel> reports) {
+    return reports.where((report) {
       final matchesFilter =
-          _selectedFilter == 'Todos' || r['status'] == _selectedFilter;
-      final matchesSearch = _searchQuery.isEmpty ||
-          r['title']!.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          r['category']!.toLowerCase().contains(_searchQuery.toLowerCase());
+          _selectedFilter == 'Todos' || report.status == _selectedFilter;
+
+      final query = _searchQuery.toLowerCase();
+      final matchesSearch = query.isEmpty ||
+          report.title.toLowerCase().contains(query) ||
+          report.category.toLowerCase().contains(query);
+
       return matchesFilter && matchesSearch;
     }).toList();
   }
@@ -95,26 +53,16 @@ class _ReportListScreenState extends State<ReportListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final reports = _filteredReports;
+    final reportsAsync = ref.watch(userReportsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: CustomAppBar(
-        title: 'Reportes',
-        subtitle: '${_allReports.length} reportes en total',
-        actions: [
-          IconButton(
-            onPressed: () {
-            },
-            icon: const Icon(Icons.tune_rounded, color: AppColors.textPrimary),
-            tooltip: 'Ordenar',
-          ),
-        ],
+      appBar: const CustomAppBar(
+        title: 'Mis reportes',
+        subtitle: 'Historial personal',
       ),
       body: Column(
         children: [
-          // ── Search + filter bar ──────────────────────────────────────────
           Container(
             color: AppColors.surface,
             padding: const EdgeInsets.fromLTRB(
@@ -125,55 +73,24 @@ class _ReportListScreenState extends State<ReportListScreen> {
             ),
             child: Column(
               children: [
-                // Search field
                 TextField(
                   controller: _searchCtrl,
-                  onChanged: (v) => setState(() => _searchQuery = v),
-                  style: theme.textTheme.bodyLarge?.copyWith(fontSize: 15),
+                  onChanged: (value) => setState(() => _searchQuery = value),
                   decoration: InputDecoration(
-                    hintText: 'Buscar reportes…',
-                    hintStyle: theme.textTheme.bodyMedium
-                        ?.copyWith(color: AppColors.textDisabled),
-                    prefixIcon: const Icon(
-                      Icons.search_rounded,
-                      color: AppColors.textSecondary,
-                      size: 22,
-                    ),
+                    hintText: 'Buscar reportes...',
+                    prefixIcon: const Icon(Icons.search_rounded),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
                             onPressed: () {
                               _searchCtrl.clear();
                               setState(() => _searchQuery = '');
                             },
-                            icon: const Icon(Icons.close_rounded, size: 20),
+                            icon: const Icon(Icons.close_rounded),
                           )
                         : null,
-                    filled: true,
-                    fillColor: AppColors.background,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
-                    border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusMd),
-                      borderSide: const BorderSide(color: AppColors.border),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusMd),
-                      borderSide: const BorderSide(color: AppColors.border),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusMd),
-                      borderSide: const BorderSide(
-                          color: AppColors.primary, width: 2),
-                    ),
                   ),
                 ),
-
                 const SizedBox(height: AppSpacing.md),
-
-                // Filter chips row
                 SizedBox(
                   height: 36,
                   child: ListView.separated(
@@ -184,34 +101,13 @@ class _ReportListScreenState extends State<ReportListScreen> {
                     itemBuilder: (context, index) {
                       final filter = _filters[index];
                       final selected = _selectedFilter == filter;
+
                       return FilterChip(
                         label: Text(filter),
                         selected: selected,
-                        onSelected: (_) =>
-                            setState(() => _selectedFilter = filter),
-                        backgroundColor: AppColors.background,
-                        selectedColor: AppColors.infoLight,
-                        checkmarkColor: AppColors.primary,
-                        labelStyle: TextStyle(
-                          color: selected
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
-                          fontWeight: selected
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                          fontSize: 13,
-                        ),
-                        side: BorderSide(
-                          color: selected
-                              ? AppColors.primary
-                              : AppColors.border,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusFull),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm),
+                        onSelected: (value) {
+                          setState(() => _selectedFilter = filter);
+                        },
                       );
                     },
                   ),
@@ -219,70 +115,64 @@ class _ReportListScreenState extends State<ReportListScreen> {
               ],
             ),
           ),
-
-          // ── List ─────────────────────────────────────────────────────────
           Expanded(
-            child: _isLoading
-                ? ListView.builder(
-                    padding: const EdgeInsets.only(
-                      left: AppSpacing.screenH,
-                      right: AppSpacing.screenH,
-                      top: AppSpacing.screenH,
-                      bottom: 120.0,
-                    ),
-                    itemCount: 4,
-                    itemBuilder: (context, index) => const Padding(
-                      padding: EdgeInsets.only(bottom: AppSpacing.md),
-                      child: LoadingListItem(),
-                    ),
-                  )
-                : reports.isEmpty
-                    ? EmptyStateWidget(
-                        icon: Icons.search_off_rounded,
-                        title: 'Sin resultados',
-                        subtitle:
-                            'No se encontraron reportes con ese filtro o búsqueda.',
-                        actionLabel: 'Limpiar filtros',
-                        onAction: () {
-                          _searchCtrl.clear();
-                          setState(() {
-                            _searchQuery = '';
-                            _selectedFilter = 'Todos';
-                          });
+            child: reportsAsync.when(
+              loading: () => ListView.builder(
+                padding: const EdgeInsets.all(AppSpacing.screenH),
+                itemCount: 4,
+                itemBuilder: (context, index) => const Padding(
+                  padding: EdgeInsets.only(bottom: AppSpacing.md),
+                  child: LoadingListItem(),
+                ),
+              ),
+              error: (error, stackTrace) => EmptyStateWidget(
+                icon: Icons.error_outline,
+                title: 'Error',
+                subtitle: error.toString(),
+              ),
+              data: (reports) {
+                final filteredReports = _applyFilters(reports);
+
+                if (filteredReports.isEmpty) {
+                  return EmptyStateWidget(
+                    icon: Icons.article_outlined,
+                    title: 'Aún no tienes reportes',
+                    subtitle:
+                        'Cuando crees tu primer reporte, aparecerá aquí.',
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    ref.invalidate(userReportsProvider);
+                  },
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(AppSpacing.screenH),
+                    itemCount: filteredReports.length,
+                    itemBuilder: (context, index) {
+                      final report = filteredReports[index];
+
+                      return ReportCard(
+                        title: report.title,
+                        description: report.description,
+                        status: report.status,
+                        date:
+                            '${report.createdAt.day}/${report.createdAt.month}/${report.createdAt.year}',
+                        category: report.category,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ReportDetailScreen(report: report),
+                            ),
+                          );
                         },
-                      )
-                    : RefreshIndicator(
-                        color: AppColors.primary,
-                        onRefresh: () async =>
-                            await Future.delayed(
-                                const Duration(milliseconds: 800)),
-                        child: ListView.builder(
-                          padding: const EdgeInsets.only(
-                            left: AppSpacing.screenH,
-                            right: AppSpacing.screenH,
-                            top: AppSpacing.screenH,
-                            bottom: 120.0,
-                          ),
-                          itemCount: reports.length,
-                          itemBuilder: (context, index) {
-                            final r = reports[index];
-                            return ReportCard(
-                              title: r['title']!,
-                              description: r['description']!,
-                              status: r['status']!,
-                              date: r['date']!,
-                              category: r['category'],
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => const ReportDetailScreen()),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
