@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../theme/colors.dart';
-import '../../../../widgets/app_card.dart';
+import '../../../../shared/widgets/app_card.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});

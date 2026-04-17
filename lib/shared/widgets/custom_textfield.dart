@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
+import '../../theme/colors.dart';
 
 /// Accessible text field with optional icons, obscure-text toggle,
 /// and full validation-error state display.

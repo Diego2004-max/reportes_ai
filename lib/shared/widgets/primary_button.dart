@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
+import '../../theme/colors.dart';
 
 /// Full-width elevated button with loading-state support.
 /// Use this instead of raw [ElevatedButton] everywhere in the app.

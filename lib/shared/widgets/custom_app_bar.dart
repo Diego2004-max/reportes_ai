@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../theme/colors.dart' show AppSpacing;
+import '../../theme/colors.dart';
+import '../../theme/colors.dart' show AppSpacing;
 
 /// Custom app bar used on every screen.
 /// Implements [PreferredSizeWidget] so it plugs into [Scaffold.appBar].

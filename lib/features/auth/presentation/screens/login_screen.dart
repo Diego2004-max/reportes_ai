@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../theme/colors.dart';
-import '../../../../widgets/custom_textfield.dart';
-import '../../../../widgets/primary_button.dart';
+import '../../../../shared/widgets/custom_textfield.dart';
+import '../../../../shared/widgets/primary_button.dart';
 import '../../../../screens/main_screen.dart';
 import 'register_screen.dart';
 

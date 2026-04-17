@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../theme/colors.dart' show AppSpacing;
+import '../../theme/colors.dart';
+import '../../theme/colors.dart' show AppSpacing;
 
 /// Centered empty-state placeholder with icon, title, and optional CTA.
 class EmptyStateWidget extends StatelessWidget {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
+import '../../theme/colors.dart';
 
 /// Full-screen centered loading indicator.
 /// Use instead of raw [CircularProgressIndicator].
