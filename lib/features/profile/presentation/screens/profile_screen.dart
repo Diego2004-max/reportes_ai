@@ -1,242 +1,136 @@
 import 'package:flutter/material.dart';
-import '../../../../shared/widgets/custom_app_bar.dart';
-import '../../../../shared/widgets/app_card.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import 'package:reportes_ai/app/router/app_router.dart';
 import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
-/// App settings and user profile screen.
-/// Shows user info header, stats row, and a list of menu options.
-/// UI only — no backend logic.
-class ProfileScreen extends StatefulWidget {
+import 'package:reportes_ai/shared/widgets/app_card.dart';
+import 'package:reportes_ai/shared/widgets/custom_app_bar.dart';
+import 'package:reportes_ai/state/report_provider.dart';
+import 'package:reportes_ai/state/session_provider.dart';
+import 'package:reportes_ai/state/theme_provider.dart';
+
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-
-  // ── Mock User Data ────────────────────────────────────────────────────────
-  static const _mockName = 'Juan Pérez';
-  static const _mockEmail = 'juan.perez@email.com';
-  static const _mockMemberSince = 'Miembro desde Ene 2026';
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(sessionProvider);
+    final statsAsync = ref.watch(userReportStatsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(
         title: 'Mi Perfil',
-        subtitle: 'Configuración de cuenta',
+        subtitle: 'Cuenta y actividad',
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(
-            left: AppSpacing.screenH,
-            right: AppSpacing.screenH,
-            top: AppSpacing.xl,
-            bottom: 120.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ── Header: Avatar & User Info ──────────────────────────────────
-            AppCard(
-              child: Column(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.primary, AppColors.primaryDark],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withAlpha(60),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      _mockName.substring(0, 1),
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textOnPrimary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(_mockName, style: theme.textTheme.titleLarge),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(_mockEmail, style: theme.textTheme.bodyMedium),
-                  const SizedBox(height: AppSpacing.xs),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.successLight,
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusFull),
-                    ),
-                    child: Text(
-                      _mockMemberSince,
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: AppColors.success,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.xxl),
-
-            // ── User Stats Row ──────────────────────────────────────────────
-            Row(
+      body: ListView(
+        padding: const EdgeInsets.all(AppSpacing.screenH),
+        children: [
+          AppCard(
+            child: Column(
               children: [
-                Expanded(
-                  child: _ProfileStatTile(
-                    label: 'Mis Reportes',
-                    value: '12',
-                    icon: Icons.article_outlined,
-                    color: AppColors.primary,
-                    bgColor: AppColors.infoLight,
+                CircleAvatar(
+                  radius: 36,
+                  backgroundColor: AppColors.primary,
+                  child: Text(
+                    (session.userName?.isNotEmpty ?? false)
+                        ? session.userName!.substring(0, 1).toUpperCase()
+                        : 'U',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: _ProfileStatTile(
-                    label: 'Resueltos',
-                    value: '9',
-                    icon: Icons.check_circle_outline_rounded,
-                    color: AppColors.success,
-                    bgColor: AppColors.successLight,
-                  ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  session.userName ?? 'Usuario',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: _ProfileStatTile(
-                    label: 'Puntos',
-                    value: '350',
-                    icon: Icons.star_outline_rounded,
-                    color: AppColors.warning,
-                    bgColor: AppColors.warningLight,
-                  ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  session.email ?? 'Sin correo',
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],
             ),
-
-            const SizedBox(height: AppSpacing.xxl),
-
-            // ── Menu List ───────────────────────────────────────────────────
-            Text('Ajustes Generales',
-                style: theme.textTheme.titleLarge?.copyWith(fontSize: 18)),
-            const SizedBox(height: AppSpacing.md),
-
-            AppCard(
-              padding: EdgeInsets.zero,
-              child: Column(
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          statsAsync.when(
+            loading: () => const SizedBox.shrink(),
+            error: (error, stackTrace) => Text(error.toString()),
+            data: (stats) {
+              return Row(
                 children: [
-                  _MenuListItem(
-                    icon: Icons.person_outline_rounded,
-                    title: 'Editar Perfil',
-                    onTap: () {},
+                  Expanded(
+                    child: _ProfileStatTile(
+                      label: 'Reportes',
+                      value: '${stats.total}',
+                    ),
                   ),
-                  const Divider(),
-                  _MenuListItem(
-                    icon: Icons.article_outlined,
-                    title: 'Mis Reportes Registrados',
-                    onTap: () {},
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: _ProfileStatTile(
+                      label: 'En revisión',
+                      value: '${stats.reviewing}',
+                    ),
                   ),
-                  const Divider(),
-                  _MenuListItem(
-                    icon: Icons.settings_outlined,
-                    title: 'Configuración',
-                    onTap: () {},
-                  ),
-                  const Divider(),
-                  _MenuListItem(
-                    icon: Icons.help_outline_rounded,
-                    title: 'Ayuda y Soporte',
-                    onTap: () {},
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: _ProfileStatTile(
+                      label: 'Atendidos',
+                      value: '${stats.attended}',
+                    ),
                   ),
                 ],
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.xxl),
-
-            // ── Logout Button ───────────────────────────────────────────────
-            AppCard(
-              padding: EdgeInsets.zero,
-              child: _MenuListItem(
-                icon: Icons.logout_rounded,
-                title: 'Cerrar Sesión',
-                iconColor: AppColors.error,
-                textColor: AppColors.error,
-                showArrow: false,
-                onTap: () {
-                  // TODO: Perform logout logic
-                },
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.xxxl),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Private sub-widgets ───────────────────────────────────────────────────────
-
-class _ProfileStatTile extends StatelessWidget {
-  const _ProfileStatTile({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-    required this.bgColor,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-  final Color bgColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return AppCard(
-      padding: const EdgeInsets.symmetric(
-          vertical: AppSpacing.lg, horizontal: AppSpacing.sm),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: bgColor,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 24),
+              );
+            },
           ),
-          const SizedBox(height: AppSpacing.md),
-          Text(value,
-              style: theme.textTheme.headlineMedium?.copyWith(fontSize: 22)),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            label,
-            style: theme.textTheme.labelMedium?.copyWith(fontSize: 11),
-            textAlign: TextAlign.center,
+          const SizedBox(height: AppSpacing.xxl),
+          AppCard(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                _ActionTile(
+                  icon: Icons.dark_mode_outlined,
+                  title: 'Cambiar tema',
+                  onTap: () async {
+                    await ref.read(themeProvider.notifier).toggleLightDark();
+                  },
+                ),
+                const Divider(height: 1),
+                _ActionTile(
+                  icon: Icons.notifications_outlined,
+                  title: 'Ver notificaciones',
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('No tienes notificaciones nuevas'),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          AppCard(
+            padding: EdgeInsets.zero,
+            child: _ActionTile(
+              icon: Icons.logout_rounded,
+              title: 'Cerrar sesión',
+              iconColor: AppColors.error,
+              textColor: AppColors.error,
+              onTap: () async {
+                await ref.read(sessionProvider.notifier).clearSession();
+                if (context.mounted) {
+                  context.go(AppRoutes.login);
+                }
+              },
+            ),
           ),
         ],
       ),
@@ -244,14 +138,39 @@ class _ProfileStatTile extends StatelessWidget {
   }
 }
 
-class _MenuListItem extends StatelessWidget {
-  const _MenuListItem({
+class _ProfileStatTile extends StatelessWidget {
+  const _ProfileStatTile({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(label),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionTile extends StatelessWidget {
+  const _ActionTile({
     required this.icon,
     required this.title,
     required this.onTap,
     this.iconColor,
     this.textColor,
-    this.showArrow = true,
   });
 
   final IconData icon;
@@ -259,50 +178,17 @@ class _MenuListItem extends StatelessWidget {
   final VoidCallback onTap;
   final Color? iconColor;
   final Color? textColor;
-  final bool showArrow;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDestructive = textColor == AppColors.error;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        splashColor: isDestructive
-            ? AppColors.errorLight.withAlpha(50)
-            : AppColors.primaryLight.withAlpha(20),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg, vertical: AppSpacing.lg),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                color: iconColor ?? AppColors.textSecondary,
-                size: 24,
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Text(
-                  title,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: textColor ?? AppColors.textPrimary,
-                    fontSize: 15,
-                  ),
-                ),
-              ),
-              if (showArrow)
-                const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: AppColors.textDisabled,
-                  size: 16,
-                ),
-            ],
-          ),
-        ),
+    return ListTile(
+      onTap: onTap,
+      leading: Icon(icon, color: iconColor ?? AppColors.textSecondary),
+      title: Text(
+        title,
+        style: TextStyle(color: textColor ?? AppColors.textPrimary),
       ),
+      trailing: const Icon(Icons.chevron_right_rounded),
     );
   }
 }
