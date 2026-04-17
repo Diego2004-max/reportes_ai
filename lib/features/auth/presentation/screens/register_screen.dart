@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:reportes_ai/app/router/app_router.dart';
 import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
 import 'package:reportes_ai/shared/widgets/custom_app_bar.dart';
 import 'package:reportes_ai/shared/widgets/custom_textfield.dart';
 import 'package:reportes_ai/shared/widgets/primary_button.dart';
+import 'package:reportes_ai/state/auth_provider.dart';
+import 'package:reportes_ai/state/session_provider.dart';
 
-/// Register screen — same design language as LoginScreen.
-/// UI only: no real auth logic yet.
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
@@ -33,16 +35,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _onRegister() {
-    if (_formKey.currentState?.validate() ?? false) {
-      setState(() => _isLoading = true);
+  Future<void> _onRegister() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
-      Future.delayed(const Duration(seconds: 2), () {
-        if (!mounted) return;
-        setState(() => _isLoading = false);
+    setState(() => _isLoading = true);
 
-        context.pop();
-      });
+    try {
+      final user = await ref.read(authRepositoryProvider).register(
+            fullName: _nameCtrl.text,
+            email: _emailCtrl.text,
+            password: _passwordCtrl.text,
+          );
+
+      await ref.read(sessionProvider.notifier).saveLocalSession(
+            userId: user.id,
+            email: user.email,
+            userName: user.fullName,
+          );
+
+      if (!mounted) return;
+      context.go(AppRoutes.app);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -79,7 +98,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: AppSpacing.xxl),
-
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.xxl),
                   decoration: BoxDecoration(
@@ -95,121 +113,59 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ],
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       CustomTextField(
                         label: 'Nombre completo',
                         hint: 'Juan Pérez',
                         controller: _nameCtrl,
-                        keyboardType: TextInputType.name,
-                        textInputAction: TextInputAction.next,
-                        autofillHints: const [AutofillHints.name],
-                        prefixIcon: const Icon(
-                          Icons.person_outline_rounded,
-                          size: 20,
-                          color: AppColors.textSecondary,
-                        ),
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
                             return 'Ingresa tu nombre';
-                          }
-                          if (v.trim().length < 3) {
-                            return 'Mínimo 3 caracteres';
                           }
                           return null;
                         },
                       ),
-
                       const SizedBox(height: AppSpacing.lg),
-
                       CustomTextField(
                         label: 'Correo electrónico',
                         hint: 'tu@correo.com',
                         controller: _emailCtrl,
                         keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        autofillHints: const [AutofillHints.email],
-                        prefixIcon: const Icon(
-                          Icons.email_outlined,
-                          size: 20,
-                          color: AppColors.textSecondary,
-                        ),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) {
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
                             return 'Ingresa tu correo';
-                          }
-                          final emailReg = RegExp(
-                            r'^[\w\-\.]+@([\w\-]+\.)+[\w]{2,4}$',
-                          );
-                          if (!emailReg.hasMatch(v)) {
-                            return 'Correo no válido';
                           }
                           return null;
                         },
                       ),
-
                       const SizedBox(height: AppSpacing.lg),
-
                       CustomTextField(
                         label: 'Contraseña',
                         hint: '••••••••',
                         controller: _passwordCtrl,
                         obscureText: true,
-                        textInputAction: TextInputAction.next,
-                        autofillHints: const [AutofillHints.newPassword],
-                        prefixIcon: const Icon(
-                          Icons.lock_outline_rounded,
-                          size: 20,
-                          color: AppColors.textSecondary,
-                        ),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) {
-                            return 'Ingresa una contraseña';
-                          }
-                          if (v.length < 8) {
-                            return 'Mínimo 8 caracteres';
-                          }
-                          final hasUpper = v.contains(RegExp(r'[A-Z]'));
-                          final hasDigit = v.contains(RegExp(r'[0-9]'));
-                          if (!hasUpper || !hasDigit) {
-                            return 'Incluye mayúscula y número';
+                        validator: (value) {
+                          if (value == null || value.length < 6) {
+                            return 'Mínimo 6 caracteres';
                           }
                           return null;
                         },
                       ),
-
                       const SizedBox(height: AppSpacing.lg),
-
                       CustomTextField(
                         label: 'Confirmar contraseña',
                         hint: '••••••••',
                         controller: _confirmCtrl,
                         obscureText: true,
-                        textInputAction: TextInputAction.done,
-                        autofillHints: const [AutofillHints.newPassword],
-                        prefixIcon: const Icon(
-                          Icons.lock_outline_rounded,
-                          size: 20,
-                          color: AppColors.textSecondary,
-                        ),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) {
-                            return 'Confirma tu contraseña';
-                          }
-                          if (v != _passwordCtrl.text) {
+                        validator: (value) {
+                          if (value != _passwordCtrl.text) {
                             return 'Las contraseñas no coinciden';
                           }
                           return null;
                         },
                         onFieldSubmitted: (_) => _onRegister(),
                       ),
-
                       const SizedBox(height: AppSpacing.xl),
-
-                      _PasswordHint(),
-
-                      const SizedBox(height: AppSpacing.xl),
-
                       PrimaryButton(
                         label: 'Crear cuenta',
                         onPressed: _onRegister,
@@ -218,69 +174,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ],
                   ),
                 ),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppSpacing.xl,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '¿Ya tienes cuenta? ',
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                      TextButton(
-                        onPressed: () => context.pop(),
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          tapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const Text('Inicia sesión'),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _PasswordHint extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.infoLight,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(
-            Icons.info_outline_rounded,
-            size: 16,
-            color: AppColors.primary,
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              'La contraseña debe tener al menos 8 caracteres, '
-              'una mayúscula y un número.',
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: AppColors.primaryDark,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

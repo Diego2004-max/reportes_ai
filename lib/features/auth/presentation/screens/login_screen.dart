@@ -7,6 +7,7 @@ import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
 import 'package:reportes_ai/shared/widgets/custom_textfield.dart';
 import 'package:reportes_ai/shared/widgets/primary_button.dart';
+import 'package:reportes_ai/state/auth_provider.dart';
 import 'package:reportes_ai/state/session_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -34,18 +35,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     setState(() => _isLoading = true);
 
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final user = await ref.read(authRepositoryProvider).login(
+            email: _emailCtrl.text,
+            password: _passwordCtrl.text,
+          );
 
-    await ref.read(sessionProvider.notifier).saveLocalSession(
-      userId: 'demo-user-001',
-      email: _emailCtrl.text.trim(),
-      userName: 'Diego',
-    );
+      await ref.read(sessionProvider.notifier).saveLocalSession(
+            userId: user.id,
+            email: user.email,
+            userName: user.fullName,
+          );
 
-    if (!mounted) return;
-
-    setState(() => _isLoading = false);
-    context.go(AppRoutes.app);
+      if (!mounted) return;
+      context.go(AppRoutes.app);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   void _goToRegister() {
@@ -112,14 +123,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               size: 20,
                               color: AppColors.textSecondary,
                             ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) {
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
                                 return 'Ingresa tu correo';
                               }
                               final emailReg = RegExp(
                                 r'^[\w\-\.]+@([\w\-]+\.)+[\w]{2,4}$',
                               );
-                              if (!emailReg.hasMatch(v)) {
+                              if (!emailReg.hasMatch(value)) {
                                 return 'Correo no válido';
                               }
                               return null;
@@ -138,29 +149,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               size: 20,
                               color: AppColors.textSecondary,
                             ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) {
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
                                 return 'Ingresa tu contraseña';
                               }
-                              if (v.length < 6) {
+                              if (value.length < 6) {
                                 return 'Mínimo 6 caracteres';
                               }
                               return null;
                             },
                             onFieldSubmitted: (_) => _onLogin(),
-                          ),
-                          const SizedBox(height: AppSpacing.sm),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () {},
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                tapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: const Text('¿Olvidaste tu contraseña?'),
-                            ),
                           ),
                           const SizedBox(height: AppSpacing.xl),
                           PrimaryButton(
@@ -190,7 +188,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                           const SizedBox(height: AppSpacing.lg),
                           _GoogleSignInButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Google Sign-In se conecta en el siguiente bloque.',
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -209,11 +215,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                           TextButton(
                             onPressed: _goToRegister,
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              tapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                            ),
                             child: const Text('Regístrate'),
                           ),
                         ],
@@ -241,17 +242,8 @@ class _BrandHeader extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [AppColors.primary, AppColors.primaryDark],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withAlpha(80),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              ),
-            ],
           ),
           child: const Icon(
             Icons.assessment_rounded,
@@ -266,7 +258,6 @@ class _BrandHeader extends StatelessWidget {
             fontSize: 24,
             fontWeight: FontWeight.w800,
             color: AppColors.textPrimary,
-            letterSpacing: -0.5,
           ),
         ),
         const SizedBox(height: AppSpacing.xs),
@@ -289,47 +280,11 @@ class _GoogleSignInButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return SizedBox(
       height: AppSpacing.buttonHeight,
       child: OutlinedButton(
         onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.textPrimary,
-          side: const BorderSide(color: AppColors.border, width: 1.5),
-          backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 20,
-              height: 20,
-              alignment: Alignment.center,
-              child: const Text(
-                'G',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.error,
-                  height: 1,
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Text(
-              'Continuar con Google',
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
+        child: const Text('Continuar con Google'),
       ),
     );
   }
