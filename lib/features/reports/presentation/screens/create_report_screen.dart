@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 
 import 'package:reportes_ai/app/theme/app_spacing.dart';
 import 'package:reportes_ai/core/services/location_service.dart';
+import 'package:reportes_ai/core/services/speech_service.dart';
 import 'package:reportes_ai/core/services/voice_service.dart';
 import 'package:reportes_ai/shared/widgets/custom_textfield.dart';
 import 'package:reportes_ai/shared/widgets/primary_button.dart';
@@ -21,12 +22,15 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+
   final LocationService _locationService = LocationService();
   final VoiceService _voiceService = VoiceService();
+  final SpeechService _speechService = SpeechService();
 
   bool _isLoading = false;
   bool _isGettingLocation = false;
   bool _isRecording = false;
+  bool _isListening = false;
 
   String _selectedCategory = 'Infraestructura';
 
@@ -84,6 +88,71 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
       if (mounted) {
         setState(() => _isGettingLocation = false);
       }
+    }
+  }
+
+  String _buildTitleFromDescription(String text) {
+    final clean = text.trim().replaceAll('\n', ' ');
+    if (clean.isEmpty) return '';
+
+    final words = clean.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
+    final short = words.take(5).join(' ');
+
+    if (short.isEmpty) return '';
+    return short[0].toUpperCase() + short.substring(1);
+  }
+
+  Future<void> _toggleVoiceDictation() async {
+    try {
+      if (_isListening) {
+        await _speechService.stopListening();
+
+        if (!mounted) return;
+        setState(() => _isListening = false);
+
+        return;
+      }
+
+      await _speechService.startListening(
+        onResult: (text, isFinal) {
+          if (!mounted) return;
+
+          setState(() {
+            _descriptionController.text = text;
+            _descriptionController.selection = TextSelection.fromPosition(
+              TextPosition(offset: _descriptionController.text.length),
+            );
+
+            if (_titleController.text.trim().isEmpty && text.trim().isNotEmpty) {
+              _titleController.text = _buildTitleFromDescription(text);
+              _titleController.selection = TextSelection.fromPosition(
+                TextPosition(offset: _titleController.text.length),
+              );
+            }
+
+            if (isFinal) {
+              _isListening = false;
+            }
+          });
+        },
+      );
+
+      if (!mounted) return;
+      setState(() => _isListening = true);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Habla ahora. Tu voz se convertirá en texto.'),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() => _isListening = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo iniciar el dictado: $e')),
+      );
     }
   }
 
@@ -195,10 +264,75 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Registra un reporte ciudadano con ubicación y evidencia de voz.',
+                  'Puedes dictar el reporte con tu voz o escribirlo manualmente.',
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: AppSpacing.xl),
+
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    color: theme.cardTheme.color ?? theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    border: Border.all(color: theme.dividerColor),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Dictado por voz',
+                        style: theme.textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        _isListening
+                            ? 'Escuchando... habla ahora'
+                            : 'Toca el botón y dicta tu reporte. La descripción se llenará automáticamente.',
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Wrap(
+                        spacing: AppSpacing.md,
+                        runSpacing: AppSpacing.md,
+                        children: [
+                          FilledButton.icon(
+                            onPressed: _toggleVoiceDictation,
+                            icon: Icon(
+                              _isListening
+                                  ? Icons.stop_circle_outlined
+                                  : Icons.keyboard_voice_rounded,
+                            ),
+                            label: Text(
+                              _isListening
+                                  ? 'Detener dictado'
+                                  : 'Dictar reporte',
+                            ),
+                          ),
+                          if (_descriptionController.text.trim().isNotEmpty)
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  _descriptionController.clear();
+                                  if (_titleController.text ==
+                                      _buildTitleFromDescription(
+                                        _descriptionController.text,
+                                      )) {
+                                    _titleController.clear();
+                                  }
+                                });
+                              },
+                              icon: const Icon(Icons.clear_rounded),
+                              label: const Text('Limpiar dictado'),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.xl),
+
                 CustomTextField(
                   label: 'Título',
                   controller: _titleController,
@@ -211,6 +345,7 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                   },
                 ),
                 const SizedBox(height: AppSpacing.lg),
+
                 Text('Categoría', style: theme.textTheme.titleMedium),
                 const SizedBox(height: AppSpacing.sm),
                 Container(
@@ -238,7 +373,9 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: AppSpacing.lg),
+
                 CustomTextField(
                   label: 'Descripción',
                   controller: _descriptionController,
@@ -251,7 +388,9 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                     return null;
                   },
                 ),
+
                 const SizedBox(height: AppSpacing.lg),
+
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppSpacing.lg),
@@ -307,7 +446,9 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                     ],
                   ),
                 ),
+
                 const SizedBox(height: AppSpacing.lg),
+
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppSpacing.lg),
@@ -326,7 +467,7 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                       const SizedBox(height: AppSpacing.sm),
                       Text(
                         _audioPath == null
-                            ? 'Aún no has grabado audio'
+                            ? 'Graba un audio como evidencia opcional'
                             : 'Audio adjunto correctamente',
                         style: theme.textTheme.bodyMedium,
                       ),
@@ -345,7 +486,9 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                     ],
                   ),
                 ),
+
                 const SizedBox(height: AppSpacing.xl),
+
                 PrimaryButton(
                   label: 'Enviar reporte',
                   onPressed: _submitReport,
