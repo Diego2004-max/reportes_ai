@@ -57,6 +57,19 @@ class ReportRepositoryImpl {
     return reports;
   }
 
+  Future<List<ReportModel>> getAllReports() async {
+    final reports = HiveService.reportsBox.values
+        .map(
+          (raw) => ReportModel.fromMap(
+            Map<String, dynamic>.from(raw as Map),
+          ),
+        )
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    return reports;
+  }
+
   Future<void> deleteReport(String reportId) async {
     await HiveService.reportsBox.delete(reportId);
   }
