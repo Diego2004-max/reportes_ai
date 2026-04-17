@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
 import 'package:reportes_ai/data/models/report_model.dart';
 import 'package:reportes_ai/shared/widgets/app_card.dart';
@@ -20,7 +19,7 @@ class ReportDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: const CustomAppBar(
         title: 'Detalle del reporte',
         showBack: true,
@@ -63,7 +62,9 @@ class ReportDetailScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            if (report.locationLabel != null) ...[
+            if (report.locationLabel != null ||
+                report.latitude != null ||
+                report.longitude != null) ...[
               const SizedBox(height: AppSpacing.lg),
               AppCard(
                 child: Column(
@@ -74,7 +75,13 @@ class ReportDetailScreen extends ConsumerWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    Text(report.locationLabel!),
+                    if (report.locationLabel != null) Text(report.locationLabel!),
+                    if (report.latitude != null && report.longitude != null) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Lat: ${report.latitude!.toStringAsFixed(5)} | Lng: ${report.longitude!.toStringAsFixed(5)}',
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -82,12 +89,13 @@ class ReportDetailScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xxl),
             PrimaryButton(
               label: 'Eliminar reporte',
-              backgroundColor: AppColors.errorLight,
-              foregroundColor: AppColors.error,
+              backgroundColor: Theme.of(context).colorScheme.errorContainer,
+              foregroundColor: Theme.of(context).colorScheme.error,
               onPressed: () async {
                 await ref.read(reportRepositoryProvider).deleteReport(report.id);
                 ref.invalidate(userReportsProvider);
                 ref.invalidate(userReportStatsProvider);
+                ref.invalidate(allReportsProvider);
 
                 if (context.mounted) {
                   Navigator.pop(context);
