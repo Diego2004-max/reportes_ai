@@ -1,21 +1,16 @@
-import 'package:flutter/material.dart';
-import 'theme/theme.dart';
-import 'features/auth/presentation/screens/login_screen.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void main() {
-  runApp(const ReportesIAApp());
-}
+import 'app/app.dart';
+import 'data/local/hive/hive_service.dart';
 
-class ReportesIAApp extends StatelessWidget {
-  const ReportesIAApp({super.key});
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await HiveService.init();
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Reportes AI',
-      theme: AppTheme.light,
-      home: const LoginScreen(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
+  runApp(
+    const ProviderScope(
+      child: AiReportsApp(),
+    ),
+  );
 }
