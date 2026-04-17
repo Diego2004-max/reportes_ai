@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:reportes_ai/app/theme/app_colors.dart';
 
 class AppTheme {
   static final ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
-    colorSchemeSeed: Colors.green,
-    scaffoldBackgroundColor: const Color(0xFFF6F8FB),
+    colorSchemeSeed: AppColors.primary,
+    scaffoldBackgroundColor: AppColors.background,
     appBarTheme: const AppBarTheme(centerTitle: false),
   );
 
   static final ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    colorSchemeSeed: Colors.green,
+    colorSchemeSeed: AppColors.primary,
     appBarTheme: const AppBarTheme(centerTitle: false),
   );
 }
