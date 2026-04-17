@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../theme/colors.dart';
 import '../../../../shared/widgets/custom_textfield.dart';
 import '../../../../shared/widgets/primary_button.dart';
-import '../../../../screens/main_screen.dart';
+import '../../../shell/screens/main_screen.dart';
 import 'register_screen.dart';
 
 /// Login screen — centered layout with email/password fields,
