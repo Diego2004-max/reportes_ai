@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../../shared/widgets/bottom_nav_bar.dart';
-import '../../../home/presentation/screens/home_screen.dart';
-import '../../../reports/presentation/screens/report_list_screen.dart';
-import '../../../map/presentation/screens/map_screen.dart';
-import '../../../profile/presentation/screens/profile_screen.dart';
-import '../../../reports/presentation/screens/create_report_screen.dart';
+
+import 'package:reportes_ai/features/home/presentation/screens/home_screen.dart';
+import 'package:reportes_ai/features/map/presentation/screens/map_screen.dart';
+import 'package:reportes_ai/features/profile/presentation/screens/profile_screen.dart';
+import 'package:reportes_ai/features/reports/presentation/screens/create_report_screen.dart';
+import 'package:reportes_ai/features/reports/presentation/screens/report_list_screen.dart';
+import 'package:reportes_ai/shared/widgets/bottom_nav_bar.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -30,8 +31,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _onCreateReportTap() {
-    Navigator.push(
-      context,
+    Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const CreateReportScreen(),
       ),
