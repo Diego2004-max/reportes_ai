@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../shell/presentation/screens/main_screen.dart';
 import '../../../../shared/widgets/custom_textfield.dart';
 import '../../../../shared/widgets/primary_button.dart';
-import '../../../shell/presentation/screens/main_screen.dart';
 import 'register_screen.dart';
 import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
