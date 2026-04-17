@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:js_util' as js_util;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,40 +24,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
   bool _isLoadingLocation = false;
   bool _locationEnabled = false;
-  bool _isWebMapReady = !kIsWeb;
-
-  Timer? _webMapTimer;
-
-  @override
-  void initState() {
-    super.initState();
-
-    if (kIsWeb) {
-      _webMapTimer = Timer.periodic(
-        const Duration(milliseconds: 500),
-        (timer) {
-          final ready = _googleMapsReady();
-          if (ready && mounted) {
-            setState(() => _isWebMapReady = true);
-            timer.cancel();
-          }
-        },
-      );
-    }
-  }
-
-  bool _googleMapsReady() {
-    try {
-      final ready = js_util.getProperty(js_util.globalThis, '__googleMapsReady');
-      return ready == true;
-    } catch (_) {
-      return false;
-    }
-  }
 
   @override
   void dispose() {
-    _webMapTimer?.cancel();
     _mapController?.dispose();
     super.dispose();
   }
@@ -85,6 +51,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       setState(() => _locationEnabled = true);
     } catch (e) {
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('No se pudo obtener la ubicación: $e')),
       );
@@ -99,27 +66,17 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   Widget build(BuildContext context) {
     final reportsAsync = ref.watch(allReportsProvider);
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: reportsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(child: Text(error.toString())),
-        data: (reports) {
-          final markers = reports
-              .where((r) => r.latitude != null && r.longitude != null)
-              .map(
-                (report) => Marker(
-                  markerId: MarkerId(report.id),
-                  position: LatLng(report.latitude!, report.longitude!),
-                  infoWindow: InfoWindow(
-                    title: report.title,
-                    snippet: '${report.category} - ${report.status}',
-                  ),
-                ),
-              )
-              .toSet();
+    if (kIsWeb) {
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: reportsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stackTrace) => Center(child: Text(error.toString())),
+          data: (reports) {
+            final withCoords = reports
+                .where((r) => r.latitude != null && r.longitude != null)
+                .toList();
 
-          if (kIsWeb && !_isWebMapReady) {
             return Padding(
               padding: const EdgeInsets.all(AppSpacing.screenH),
               child: Column(
@@ -146,7 +103,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Cargando Google Maps...',
+                                'Vista web estable',
                                 style: Theme.of(context).textTheme.bodySmall,
                               ),
                             ],
@@ -156,15 +113,71 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  const Expanded(
-                    child: Center(
-                      child: CircularProgressIndicator(),
+                  if (withCoords.isEmpty)
+                    const Expanded(
+                      child: EmptyStateWidget(
+                        icon: Icons.map_outlined,
+                        title: 'Aún no hay reportes con ubicación',
+                        subtitle:
+                            'Crea un reporte y permite capturar ubicación para verlo aquí.',
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: ListView.separated(
+                        itemCount: withCoords.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: AppSpacing.md),
+                        itemBuilder: (context, index) {
+                          final report = withCoords[index];
+                          return AppCard(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  report.title,
+                                  style: Theme.of(context).textTheme.titleMedium,
+                                ),
+                                const SizedBox(height: AppSpacing.xs),
+                                Text(report.category),
+                                const SizedBox(height: AppSpacing.sm),
+                                Text(
+                                  report.locationLabel ??
+                                      'Lat: ${report.latitude!.toStringAsFixed(5)} | Lng: ${report.longitude!.toStringAsFixed(5)}',
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
                 ],
               ),
             );
-          }
+          },
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: reportsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) => Center(child: Text(error.toString())),
+        data: (reports) {
+          final markers = reports
+              .where((r) => r.latitude != null && r.longitude != null)
+              .map(
+                (report) => Marker(
+                  markerId: MarkerId(report.id),
+                  position: LatLng(report.latitude!, report.longitude!),
+                  infoWindow: InfoWindow(
+                    title: report.title,
+                    snippet: '${report.category} - ${report.status}',
+                  ),
+                ),
+              )
+              .toSet();
 
           if (markers.isEmpty) {
             return const Padding(
@@ -189,7 +202,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   ),
                   markers: markers,
                   zoomControlsEnabled: false,
-                  myLocationEnabled: _locationEnabled && !kIsWeb,
+                  myLocationEnabled: _locationEnabled,
                   myLocationButtonEnabled: false,
                   compassEnabled: true,
                   mapToolbarEnabled: false,
@@ -228,7 +241,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                         ),
                       ),
                       IconButton(
-                        onPressed: _isLoadingLocation ? null : _goToCurrentLocation,
+                        onPressed:
+                            _isLoadingLocation ? null : _goToCurrentLocation,
                         icon: _isLoadingLocation
                             ? const SizedBox(
                                 width: 18,
