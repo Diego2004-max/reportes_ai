@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../theme/colors.dart';
-import '../../widgets/custom_app_bar.dart';
-import '../../widgets/app_card.dart';
+import '../../../../theme/colors.dart';
+import '../../../../widgets/custom_app_bar.dart';
+import '../../../../widgets/app_card.dart';
 
 /// App settings and user profile screen.
 /// Shows user info header, stats row, and a list of menu options.

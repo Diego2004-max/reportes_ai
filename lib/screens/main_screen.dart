@@ -3,7 +3,7 @@ import '../widgets/bottom_nav_bar.dart';
 import '../features/home/presentation/screens/home_screen.dart';
 import '../features/reports/presentation/screens/report_list_screen.dart';
 import '../features/map/presentation/screens/map_screen.dart';
-import 'profile/profile_screen.dart';
+import '../features/profile/presentation/screens/profile_screen.dart';
 import '../features/reports/presentation/screens/create_report_screen.dart';
 
 class MainScreen extends StatefulWidget {
