@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:reportes_ai/app/theme/app_colors.dart';
+import 'package:reportes_ai/app/theme/app_spacing.dart';
 
 class AppBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -15,12 +15,14 @@ class AppBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         child: Material(
-          color: Colors.white,
+          color: Theme.of(context).cardTheme.color ?? scheme.surface,
           elevation: 10,
           shadowColor: Colors.black12,
           borderRadius: BorderRadius.circular(28),
@@ -53,8 +55,8 @@ class AppBottomNavBar extends StatelessWidget {
                       child: Container(
                         width: 56,
                         height: 56,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
+                        decoration: BoxDecoration(
+                          color: scheme.primary,
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -110,7 +112,8 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.primary : AppColors.textSecondary;
+    final scheme = Theme.of(context).colorScheme;
+    final color = selected ? scheme.primary : scheme.onSurface.withAlpha(160);
 
     return InkWell(
       borderRadius: BorderRadius.circular(18),

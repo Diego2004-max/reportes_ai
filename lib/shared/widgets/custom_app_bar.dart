@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../app/theme/app_colors.dart';
-import '../../app/theme/app_spacing.dart' show AppSpacing;
+import 'package:reportes_ai/app/theme/app_spacing.dart';
 
-/// Custom app bar used on every screen.
-/// Implements [PreferredSizeWidget] so it plugs into [Scaffold.appBar].
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({
     super.key,
@@ -39,15 +36,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fg = foregroundColor ?? AppColors.textPrimary;
-    final bg = backgroundColor ?? AppColors.surface;
+    final theme = Theme.of(context);
+    final fg = foregroundColor ?? theme.colorScheme.onSurface;
+    final bg = backgroundColor ?? theme.scaffoldBackgroundColor;
 
     return AppBar(
       backgroundColor: bg,
       foregroundColor: fg,
-      elevation: elevation ?? AppSpacing.elevationNone,
-      scrolledUnderElevation: AppSpacing.elevationSm,
-      shadowColor: AppColors.shadow,
+      elevation: elevation ?? 0,
       surfaceTintColor: Colors.transparent,
       centerTitle: centerTitle,
       leading: showBack
@@ -56,7 +52,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               icon: Container(
                 padding: const EdgeInsets.all(AppSpacing.xs),
                 decoration: BoxDecoration(
-                  color: AppColors.background,
+                  color: theme.cardTheme.color ?? theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                 ),
                 child: Icon(
@@ -81,11 +77,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
                 Text(
                   subtitle!,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.textSecondary,
-                  ),
+                  style: theme.textTheme.bodySmall,
                 ),
               ],
             )

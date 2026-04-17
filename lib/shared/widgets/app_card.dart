@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../app/theme/app_colors.dart';
-import '../../app/theme/app_spacing.dart';
+import 'package:reportes_ai/app/theme/app_spacing.dart';
 
-/// White surface card with soft shadow and rounded corners.
-/// Use instead of raw [Card] for all grouped-content areas.
 class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
@@ -13,7 +10,6 @@ class AppCard extends StatelessWidget {
     this.borderRadius,
     this.color,
     this.onTap,
-    this.elevation,
   });
 
   final Widget child;
@@ -22,27 +18,23 @@ class AppCard extends StatelessWidget {
   final double? borderRadius;
   final Color? color;
   final VoidCallback? onTap;
-  final double? elevation;
 
   @override
   Widget build(BuildContext context) {
     final radius = borderRadius ?? AppSpacing.radiusXxl;
+    final cardColor =
+        color ?? Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface;
 
     return Container(
       margin: margin,
       decoration: BoxDecoration(
-        color: color ?? AppColors.surface,
+        color: cardColor,
         borderRadius: BorderRadius.circular(radius),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow,
+            color: Colors.black.withAlpha(18),
             blurRadius: 12,
             offset: const Offset(0, 2),
-          ),
-          BoxShadow(
-            color: AppColors.shadowMedium.withAlpha(30),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
           ),
         ],
       ),
@@ -52,11 +44,8 @@ class AppCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(radius),
-          splashColor: AppColors.primaryLight.withAlpha(20),
-          highlightColor: Colors.transparent,
           child: Padding(
-            padding: padding ??
-                const EdgeInsets.all(AppSpacing.lg),
+            padding: padding ?? const EdgeInsets.all(AppSpacing.lg),
             child: child,
           ),
         ),
@@ -65,7 +54,6 @@ class AppCard extends StatelessWidget {
   }
 }
 
-/// Stat / summary tile used on the Home dashboard.
 class StatCard extends StatelessWidget {
   const StatCard({
     super.key,
@@ -87,8 +75,7 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final ic = iconColor ?? AppColors.primary;
-    final ibg = iconBackground ?? AppColors.infoLight;
+    final scheme = theme.colorScheme;
 
     return AppCard(
       onTap: onTap,
@@ -99,10 +86,14 @@ class StatCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
-              color: ibg,
+              color: iconBackground ?? scheme.primary.withAlpha(30),
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
             ),
-            child: Icon(icon, color: ic, size: 22),
+            child: Icon(
+              icon,
+              color: iconColor ?? scheme.primary,
+              size: 22,
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
