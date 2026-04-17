@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../shared/widgets/bottom_nav_bar.dart';
-import '../../home/presentation/screens/home_screen.dart';
-import '../../reports/presentation/screens/report_list_screen.dart';
-import '../../map/presentation/screens/map_screen.dart';
-import '../../profile/presentation/screens/profile_screen.dart';
-import '../../reports/presentation/screens/create_report_screen.dart';
+import '../../../../shared/widgets/bottom_nav_bar.dart';
+import '../../../home/presentation/screens/home_screen.dart';
+import '../../../reports/presentation/screens/report_list_screen.dart';
+import '../../../map/presentation/screens/map_screen.dart';
+import '../../../profile/presentation/screens/profile_screen.dart';
+import '../../../reports/presentation/screens/create_report_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
