@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:reportes_ai/app/theme/app_spacing.dart';
 
 class AppBottomNavBar extends StatelessWidget {
   final int currentIndex;

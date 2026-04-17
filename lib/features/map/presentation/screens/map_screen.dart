@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
 import 'package:reportes_ai/core/services/location_service.dart';
 import 'package:reportes_ai/shared/widgets/app_card.dart';
