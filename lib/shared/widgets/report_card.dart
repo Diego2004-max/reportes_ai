@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart';
-import '../../app/theme/app_colors.dart';
-import '../../app/theme/app_spacing.dart' show AppSpacing;
 
-/// Status label constants shared across the app.
+import 'package:reportes_ai/app/theme/app_colors.dart';
+import 'package:reportes_ai/app/theme/app_spacing.dart';
+import 'package:reportes_ai/data/repositories/report_repository_impl.dart';
+
 abstract final class ReportStatus {
-  static const String pending    = 'Pendiente';
-  static const String inProgress = 'En Proceso';
-  static const String resolved   = 'Resuelto';
-  static const String rejected   = 'Rechazado';
+  static const String submitted = UserReportStatus.submitted;
+  static const String reviewing = UserReportStatus.reviewing;
+  static const String attended = UserReportStatus.attended;
 }
 
-/// Returns semantic color for each [ReportStatus] value.
 extension ReportStatusColor on String {
   Color get statusColor {
     switch (this) {
-      case ReportStatus.pending:
-        return AppColors.warning;
-      case ReportStatus.inProgress:
+      case ReportStatus.submitted:
         return AppColors.info;
-      case ReportStatus.resolved:
+      case ReportStatus.reviewing:
+        return AppColors.warning;
+      case ReportStatus.attended:
         return AppColors.success;
-      case ReportStatus.rejected:
-        return AppColors.error;
       default:
         return AppColors.textDisabled;
     }
@@ -29,14 +26,12 @@ extension ReportStatusColor on String {
 
   Color get statusBackground {
     switch (this) {
-      case ReportStatus.pending:
-        return AppColors.warningLight;
-      case ReportStatus.inProgress:
+      case ReportStatus.submitted:
         return AppColors.infoLight;
-      case ReportStatus.resolved:
+      case ReportStatus.reviewing:
+        return AppColors.warningLight;
+      case ReportStatus.attended:
         return AppColors.successLight;
-      case ReportStatus.rejected:
-        return AppColors.errorLight;
       default:
         return AppColors.surfaceVariant;
     }
@@ -44,22 +39,18 @@ extension ReportStatusColor on String {
 
   IconData get statusIcon {
     switch (this) {
-      case ReportStatus.pending:
-        return Icons.schedule_rounded;
-      case ReportStatus.inProgress:
-        return Icons.autorenew_rounded;
-      case ReportStatus.resolved:
+      case ReportStatus.submitted:
+        return Icons.send_rounded;
+      case ReportStatus.reviewing:
+        return Icons.search_rounded;
+      case ReportStatus.attended:
         return Icons.check_circle_rounded;
-      case ReportStatus.rejected:
-        return Icons.cancel_rounded;
       default:
         return Icons.help_outline_rounded;
     }
   }
 }
 
-/// Dynamic Card that displays a single report in a list.
-/// If status is 'En Proceso', it renders as a Dark Green card (active aesthetic).
 class ReportCard extends StatelessWidget {
   const ReportCard({
     super.key,
@@ -69,8 +60,6 @@ class ReportCard extends StatelessWidget {
     required this.date,
     this.category,
     this.onTap,
-    this.onDismissed,
-    this.heroTag,
   });
 
   final String title;
@@ -79,29 +68,15 @@ class ReportCard extends StatelessWidget {
   final String date;
   final String? category;
   final VoidCallback? onTap;
-  final VoidCallback? onDismissed;
-  final String? heroTag;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
-    // Forest Green Dynamic aesthetic logic
-    final isActive = status == ReportStatus.inProgress || status == ReportStatus.pending;
-    
-    final bgColor = isActive ? AppColors.primary : AppColors.surface;
-    final titleColor = isActive ? Colors.white : AppColors.textPrimary;
-    final bodyColor = isActive ? Colors.white70 : AppColors.textSecondary;
-    final iconColor = isActive ? Colors.white : AppColors.textDisabled;
-    
-    // For the badge, if active, we invert it against the dark green background
-    final badgeColor = isActive ? Colors.white : status.statusColor;
-    final badgeBgColor = isActive ? Colors.white.withAlpha(40) : status.statusBackground;
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppSpacing.radiusXxl),
         boxShadow: const [
           BoxShadow(
@@ -117,18 +92,14 @@ class ReportCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppSpacing.radiusXxl),
-          splashColor: Colors.white.withAlpha(30),
-          highlightColor: Colors.transparent,
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Header row ──────────────────────────────────────────────
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title + category
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,7 +107,7 @@ class ReportCard extends StatelessWidget {
                           Text(
                             title,
                             style: theme.textTheme.titleMedium?.copyWith(
-                              color: titleColor,
+                              color: AppColors.textPrimary,
                               fontWeight: FontWeight.w700,
                             ),
                             maxLines: 2,
@@ -146,34 +117,35 @@ class ReportCard extends StatelessWidget {
                             const SizedBox(height: AppSpacing.xs),
                             Text(
                               category!,
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: bodyColor,
-                              ),
+                              style: theme.textTheme.labelMedium,
                             ),
                           ],
                         ],
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
-                    // Status badge
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.xs,
+                      ),
                       decoration: BoxDecoration(
-                        color: badgeBgColor,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                        color: status.statusBackground,
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusFull),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(status.statusIcon, size: 14, color: badgeColor),
+                          Icon(status.statusIcon,
+                              size: 14, color: status.statusColor),
                           const SizedBox(width: 4),
                           Text(
                             status,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: badgeColor,
+                              color: status.statusColor,
                             ),
                           ),
                         ],
@@ -181,47 +153,25 @@ class ReportCard extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: AppSpacing.md),
-
-                // ── Description ─────────────────────────────────────────────
                 Text(
                   description,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: bodyColor),
+                  style: theme.textTheme.bodyMedium,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-
                 const SizedBox(height: AppSpacing.xl),
-
-                // ── Footer: date and details link ───────────────────────────
                 Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.calendar_today_outlined,
                       size: 16,
-                      color: iconColor,
+                      color: AppColors.textDisabled,
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Text(
                       date,
-                      style: theme.textTheme.labelMedium?.copyWith(color: iconColor),
-                    ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
-                      decoration: BoxDecoration(
-                        color: isActive ? Colors.white.withAlpha(20) : AppColors.surfaceVariant,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                      ),
-                      child: Text(
-                        'Más detalles',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: isActive ? Colors.white : AppColors.primary,
-                        ),
-                      ),
+                      style: theme.textTheme.labelMedium,
                     ),
                   ],
                 ),
