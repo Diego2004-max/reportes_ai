@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../app/theme/app_colors.dart';
+import 'package:reportes_ai/app/theme/app_colors.dart';
 
 class AppBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -16,79 +16,77 @@ class AppBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: Material(
           color: Colors.white,
+          elevation: 10,
+          shadowColor: Colors.black12,
           borderRadius: BorderRadius.circular(28),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: _NavItem(
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home,
-                label: 'Inicio',
-                selected: currentIndex == 0,
-                onTap: () => onTabSelected(0),
-              ),
-            ),
-            Expanded(
-              child: _NavItem(
-                icon: Icons.map_outlined,
-                activeIcon: Icons.map,
-                label: 'Mapa',
-                selected: currentIndex == 1,
-                onTap: () => onTabSelected(1),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: GestureDetector(
-                  onTap: onCreateTap,
-                  child: Container(
-                    width: 56,
-                    height: 56,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.add,
-                      color: Colors.white,
-                      size: 30,
+          child: SizedBox(
+            height: 84,
+            child: Row(
+              children: [
+                Expanded(
+                  child: _NavItem(
+                    icon: Icons.home_outlined,
+                    activeIcon: Icons.home,
+                    label: 'Inicio',
+                    selected: currentIndex == 0,
+                    onTap: () => onTabSelected(0),
+                  ),
+                ),
+                Expanded(
+                  child: _NavItem(
+                    icon: Icons.map_outlined,
+                    activeIcon: Icons.map,
+                    label: 'Mapa',
+                    selected: currentIndex == 1,
+                    onTap: () => onTabSelected(1),
+                  ),
+                ),
+                Expanded(
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: onCreateTap,
+                      child: Container(
+                        width: 56,
+                        height: 56,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
+                Expanded(
+                  child: _NavItem(
+                    icon: Icons.article_outlined,
+                    activeIcon: Icons.article,
+                    label: 'Reportes',
+                    selected: currentIndex == 2,
+                    onTap: () => onTabSelected(2),
+                  ),
+                ),
+                Expanded(
+                  child: _NavItem(
+                    icon: Icons.person_outline,
+                    activeIcon: Icons.person,
+                    label: 'Perfil',
+                    selected: currentIndex == 3,
+                    onTap: () => onTabSelected(3),
+                  ),
+                ),
+              ],
             ),
-            Expanded(
-              child: _NavItem(
-                icon: Icons.article_outlined,
-                activeIcon: Icons.article,
-                label: 'Reportes',
-                selected: currentIndex == 2,
-                onTap: () => onTabSelected(2),
-              ),
-            ),
-            Expanded(
-              child: _NavItem(
-                icon: Icons.person_outline,
-                activeIcon: Icons.person,
-                label: 'Perfil',
-                selected: currentIndex == 3,
-                onTap: () => onTabSelected(3),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -117,8 +115,7 @@ class _NavItem extends StatelessWidget {
     return InkWell(
       borderRadius: BorderRadius.circular(18),
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

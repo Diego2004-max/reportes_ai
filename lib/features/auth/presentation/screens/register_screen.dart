@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import '../../../../shared/widgets/custom_textfield.dart';
-import '../../../../shared/widgets/primary_button.dart';
-import '../../../../shared/widgets/custom_app_bar.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
+import 'package:reportes_ai/shared/widgets/custom_app_bar.dart';
+import 'package:reportes_ai/shared/widgets/custom_textfield.dart';
+import 'package:reportes_ai/shared/widgets/primary_button.dart';
 
 /// Register screen — same design language as LoginScreen.
-/// UI only: no navigation or auth logic is implemented here.
+/// UI only: no real auth logic yet.
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -15,12 +17,12 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _formKey       = GlobalKey<FormState>();
-  final _nameCtrl      = TextEditingController();
-  final _emailCtrl     = TextEditingController();
-  final _passwordCtrl  = TextEditingController();
-  final _confirmCtrl   = TextEditingController();
-  bool _isLoading      = false;
+  final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  final _confirmCtrl = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -34,9 +36,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _onRegister() {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
-      // TODO: wire to authentication controller
+
       Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) setState(() => _isLoading = false);
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+
+        context.pop();
       });
     }
   }
@@ -64,7 +69,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Header
                 Text(
                   'Únete a Reportes AI',
                   style: theme.textTheme.headlineMedium,
@@ -74,10 +78,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   'Completa el formulario para registrarte',
                   style: theme.textTheme.bodyMedium,
                 ),
-
                 const SizedBox(height: AppSpacing.xxl),
 
-                // ── Form card ─────────────────────────────────────────────
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.xxl),
                   decoration: BoxDecoration(
@@ -95,7 +97,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Name
                       CustomTextField(
                         label: 'Nombre completo',
                         hint: 'Juan Pérez',
@@ -121,7 +122,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       const SizedBox(height: AppSpacing.lg),
 
-                      // Email
                       CustomTextField(
                         label: 'Correo electrónico',
                         hint: 'tu@correo.com',
@@ -139,7 +139,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             return 'Ingresa tu correo';
                           }
                           final emailReg = RegExp(
-                              r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$');
+                            r'^[\w\-\.]+@([\w\-]+\.)+[\w]{2,4}$',
+                          );
                           if (!emailReg.hasMatch(v)) {
                             return 'Correo no válido';
                           }
@@ -149,7 +150,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       const SizedBox(height: AppSpacing.lg),
 
-                      // Password
                       CustomTextField(
                         label: 'Contraseña',
                         hint: '••••••••',
@@ -180,7 +180,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       const SizedBox(height: AppSpacing.lg),
 
-                      // Confirm password
                       CustomTextField(
                         label: 'Confirmar contraseña',
                         hint: '••••••••',
@@ -207,12 +206,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                       const SizedBox(height: AppSpacing.xl),
 
-                      // Password strength hint
                       _PasswordHint(),
 
                       const SizedBox(height: AppSpacing.xl),
 
-                      // Register button
                       PrimaryButton(
                         label: 'Crear cuenta',
                         onPressed: _onRegister,
@@ -222,10 +219,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
 
-                // ── Footer link ───────────────────────────────────────────
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppSpacing.xl,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -234,11 +231,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         style: theme.textTheme.bodyMedium,
                       ),
                       TextButton(
-                        onPressed: () => Navigator.of(context).maybePop(),
+                        onPressed: () => context.pop(),
                         style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            tapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap),
+                          padding: EdgeInsets.zero,
+                          tapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        ),
                         child: const Text('Inicia sesión'),
                       ),
                     ],
@@ -257,6 +255,7 @@ class _PasswordHint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(

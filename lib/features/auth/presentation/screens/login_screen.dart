@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:reportes_ai/app/router/app_router.dart';
@@ -6,18 +7,16 @@ import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
 import 'package:reportes_ai/shared/widgets/custom_textfield.dart';
 import 'package:reportes_ai/shared/widgets/primary_button.dart';
+import 'package:reportes_ai/state/session_provider.dart';
 
-/// Login screen — centered layout with email/password fields,
-/// Google sign-in button, and a link to the register screen.
-/// UI only: no real auth logic yet.
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
@@ -30,17 +29,23 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _onLogin() {
-    if (_formKey.currentState?.validate() ?? false) {
-      setState(() => _isLoading = true);
+  Future<void> _onLogin() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
-      Future.delayed(const Duration(seconds: 1), () {
-        if (!mounted) return;
+    setState(() => _isLoading = true);
 
-        setState(() => _isLoading = false);
-        context.go(AppRoutes.app);
-      });
-    }
+    await Future.delayed(const Duration(seconds: 1));
+
+    await ref.read(sessionProvider.notifier).saveLocalSession(
+      userId: 'demo-user-001',
+      email: _emailCtrl.text.trim(),
+      userName: 'Diego',
+    );
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+    context.go(AppRoutes.app);
   }
 
   void _goToRegister() {
@@ -66,11 +71,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: AppSpacing.huge),
-
                     _BrandHeader(),
-
                     const SizedBox(height: AppSpacing.xxxl),
-
                     Container(
                       padding: const EdgeInsets.all(AppSpacing.xxl),
                       decoration: BoxDecoration(
@@ -98,7 +100,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: theme.textTheme.bodyMedium,
                           ),
                           const SizedBox(height: AppSpacing.xxl),
-
                           CustomTextField(
                             label: 'Correo electrónico',
                             hint: 'tu@correo.com',
@@ -124,9 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               return null;
                             },
                           ),
-
                           const SizedBox(height: AppSpacing.lg),
-
                           CustomTextField(
                             label: 'Contraseña',
                             hint: '••••••••',
@@ -150,14 +149,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                             onFieldSubmitted: (_) => _onLogin(),
                           ),
-
                           const SizedBox(height: AppSpacing.sm),
-
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
-                              onPressed: () {
-                              },
+                              onPressed: () {},
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
                                 tapTargetSize:
@@ -166,17 +162,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: const Text('¿Olvidaste tu contraseña?'),
                             ),
                           ),
-
                           const SizedBox(height: AppSpacing.xl),
-
                           PrimaryButton(
                             label: 'Iniciar Sesión',
                             onPressed: _onLogin,
                             isLoading: _isLoading,
                           ),
-
                           const SizedBox(height: AppSpacing.lg),
-
                           Row(
                             children: [
                               const Expanded(
@@ -196,19 +188,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                           ),
-
                           const SizedBox(height: AppSpacing.lg),
-
                           _GoogleSignInButton(
-                            onPressed: () {
-                            },
+                            onPressed: () {},
                           ),
                         ],
                       ),
                     ),
-
                     const Spacer(),
-
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSpacing.xl,

@@ -17,13 +17,6 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    MapScreen(),
-    ReportListScreen(),
-    ProfileScreen(),
-  ];
-
   void _onTabSelected(int index) {
     setState(() {
       _currentIndex = index;
@@ -38,14 +31,26 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  Widget _buildCurrentScreen() {
+    switch (_currentIndex) {
+      case 0:
+        return const HomeScreen();
+      case 1:
+        return const MapScreen();
+      case 2:
+        return const ReportListScreen();
+      case 3:
+        return const ProfileScreen();
+      default:
+        return const HomeScreen();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true,
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      extendBody: false,
+      body: _buildCurrentScreen(),
       bottomNavigationBar: AppBottomNavBar(
         currentIndex: _currentIndex,
         onTabSelected: _onTabSelected,
