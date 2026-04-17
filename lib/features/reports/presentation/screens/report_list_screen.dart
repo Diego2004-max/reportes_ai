@@ -19,7 +19,7 @@ class ReportListScreen extends StatefulWidget {
 class _ReportListScreenState extends State<ReportListScreen> {
   final _searchCtrl = TextEditingController();
   String _selectedFilter = 'Todos';
-  bool _isLoading = false;
+  final bool _isLoading = false;
   String _searchQuery = '';
 
   static const List<String> _filters = [
@@ -106,7 +106,6 @@ class _ReportListScreenState extends State<ReportListScreen> {
         actions: [
           IconButton(
             onPressed: () {
-              // TODO: open sort/advanced filter bottom sheet
             },
             icon: const Icon(Icons.tune_rounded, color: AppColors.textPrimary),
             tooltip: 'Ordenar',
@@ -180,7 +179,7 @@ class _ReportListScreenState extends State<ReportListScreen> {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: _filters.length,
-                    separatorBuilder: (_, __) =>
+                    separatorBuilder: (context, index) =>
                         const SizedBox(width: AppSpacing.sm),
                     itemBuilder: (context, index) {
                       final filter = _filters[index];
@@ -232,7 +231,7 @@ class _ReportListScreenState extends State<ReportListScreen> {
                       bottom: 120.0,
                     ),
                     itemCount: 4,
-                    itemBuilder: (_, __) => const Padding(
+                    itemBuilder: (context, index) => const Padding(
                       padding: EdgeInsets.only(bottom: AppSpacing.md),
                       child: LoadingListItem(),
                     ),

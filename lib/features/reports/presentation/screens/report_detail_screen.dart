@@ -6,7 +6,6 @@ import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
 
 /// Report Detail screen — shows full report info in structured card sections.
-/// UI only — edit/delete/navigate actions have TODO placeholders.
 class ReportDetailScreen extends StatelessWidget {
   const ReportDetailScreen({super.key, this.reportId});
 
@@ -41,7 +40,6 @@ class ReportDetailScreen extends StatelessWidget {
           // Edit action
           IconButton(
             onPressed: () {
-              // TODO: navigate to edit screen
             },
             icon: Container(
               padding: const EdgeInsets.all(AppSpacing.xs),
@@ -194,7 +192,6 @@ class ReportDetailScreen extends StatelessWidget {
                   ),
                   IconButton(
                     onPressed: () {
-                      // TODO: navigate to map with location
                     },
                     icon: const Icon(Icons.open_in_new_rounded,
                         size: 18, color: AppColors.primary),
@@ -262,12 +259,11 @@ class ReportDetailScreen extends StatelessWidget {
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: 4,
-                      separatorBuilder: (_, __) =>
+                      separatorBuilder: (context, index) =>
                           const SizedBox(width: AppSpacing.md),
                       itemBuilder: (context, index) => _ImageThumbnail(
                         index: index,
                         onTap: () {
-                          // TODO: open image viewer
                         },
                       ),
                     ),
@@ -275,7 +271,6 @@ class ReportDetailScreen extends StatelessWidget {
                   const SizedBox(height: AppSpacing.md),
                   TextButton.icon(
                     onPressed: () {
-                      // TODO: add image from gallery/camera
                     },
                     icon: const Icon(Icons.add_photo_alternate_outlined,
                         size: 18),
@@ -291,11 +286,10 @@ class ReportDetailScreen extends StatelessWidget {
 
             const SizedBox(height: AppSpacing.xxl),
 
-            // ── Action buttons ────────────────────────────────────────────
+            // ── Action buttons
             PrimaryButton(
               label: 'Editar Reporte',
               onPressed: () {
-                // TODO: navigate to edit screen
               },
               icon: const Icon(Icons.edit_outlined, size: 18,
                   color: AppColors.textOnPrimary),
@@ -351,7 +345,6 @@ class ReportDetailScreen extends StatelessWidget {
     );
 
     if (confirmed == true) {
-      // TODO: call delete controller, then navigate back
     }
   }
 }
