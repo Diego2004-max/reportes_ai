@@ -4,6 +4,7 @@ import 'home/home_screen.dart';
 import 'reports/report_list_screen.dart';
 import 'map/map_screen.dart';
 import 'profile/profile_screen.dart';
+import 'reports/create_report_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -22,27 +23,19 @@ class _MainScreenState extends State<MainScreen> {
     ProfileScreen(),
   ];
 
-  void _handleNavigation(int index) {
-    if (index == 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Aquí irá crear reporte'),
-        ),
-      );
-      return;
-    }
-
+  void _onTabSelected(int index) {
     setState(() {
-      if (index == 0) {
-        _currentIndex = 0; // Inicio
-      } else if (index == 1) {
-        _currentIndex = 1; // Mapa
-      } else if (index == 3) {
-        _currentIndex = 2; // Reportes
-      } else if (index == 4) {
-        _currentIndex = 3; // Perfil
-      }
+      _currentIndex = index;
     });
+  }
+
+  void _onCreateReportTap() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const CreateReportScreen(),
+      ),
+    );
   }
 
   @override
@@ -55,7 +48,8 @@ class _MainScreenState extends State<MainScreen> {
       ),
       bottomNavigationBar: AppBottomNavBar(
         currentIndex: _currentIndex,
-        onTap: _handleNavigation,
+        onTabSelected: _onTabSelected,
+        onCreateTap: _onCreateReportTap,
       ),
     );
   }
