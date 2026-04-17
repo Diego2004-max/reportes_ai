@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'router/app_router.dart';
-import '../app/theme/app.theme.dart';
-import '../state/theme_provider.dart';
+import 'package:reportes_ai/app/router/app_router.dart';
+import 'package:reportes_ai/app/theme/app_theme.dart';
+import 'package:reportes_ai/state/theme_provider.dart';
 
 class AiReportsApp extends ConsumerWidget {
   const AiReportsApp({super.key});
