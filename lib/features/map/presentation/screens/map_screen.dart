@@ -1,19 +1,22 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:reportes_ai/app/theme/app_spacing.dart';
 import 'package:reportes_ai/core/services/location_service.dart';
 import 'package:reportes_ai/shared/widgets/app_card.dart';
+import 'package:reportes_ai/shared/widgets/empty_state.dart';
+import 'package:reportes_ai/state/report_provider.dart';
 
-class MapScreen extends StatefulWidget {
+class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
 
   @override
-  State<MapScreen> createState() => _MapScreenState();
+  ConsumerState<MapScreen> createState() => _MapScreenState();
 }
 
-class _MapScreenState extends State<MapScreen> {
+class _MapScreenState extends ConsumerState<MapScreen> {
   GoogleMapController? _mapController;
   final LocationService _locationService = LocationService();
 
@@ -21,33 +24,6 @@ class _MapScreenState extends State<MapScreen> {
 
   bool _isLoadingLocation = false;
   bool _locationEnabled = false;
-
-  final Set<Marker> _markers = {
-    const Marker(
-      markerId: MarkerId('reporte_1'),
-      position: LatLng(1.2145, -77.2788),
-      infoWindow: InfoWindow(
-        title: 'Fuga de agua',
-        snippet: 'Enviado',
-      ),
-    ),
-    const Marker(
-      markerId: MarkerId('reporte_2'),
-      position: LatLng(1.2117, -77.2830),
-      infoWindow: InfoWindow(
-        title: 'Bache en avenida',
-        snippet: 'En revisión',
-      ),
-    ),
-    const Marker(
-      markerId: MarkerId('reporte_3'),
-      position: LatLng(1.2160, -77.2805),
-      infoWindow: InfoWindow(
-        title: 'Luminaria dañada',
-        snippet: 'Atendido',
-      ),
-    ),
-  };
 
   @override
   void dispose() {
@@ -60,55 +36,170 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _goToCurrentLocation() async {
-    setState(() {
-      _isLoadingLocation = true;
-    });
+    setState(() => _isLoadingLocation = true);
 
     try {
       final position = await _locationService.getCurrentLocation();
-
       final currentLatLng = LatLng(position.latitude, position.longitude);
 
       await _mapController?.animateCamera(
         CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: currentLatLng,
-            zoom: 16,
-          ),
+          CameraPosition(target: currentLatLng, zoom: 16),
         ),
       );
 
-      setState(() {
-        _locationEnabled = true;
-      });
+      setState(() => _locationEnabled = true);
     } catch (e) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('No se pudo obtener la ubicación: $e'),
-        ),
+        SnackBar(content: Text('No se pudo obtener la ubicación: $e')),
       );
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoadingLocation = false;
-        });
+        setState(() => _isLoadingLocation = false);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final reportsAsync = ref.watch(allReportsProvider);
+
     if (kIsWeb) {
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.screenH),
-            child: Column(
-              children: [
-                AppCard(
+        body: reportsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stackTrace) => Center(child: Text(error.toString())),
+          data: (reports) {
+            final withCoords = reports
+                .where((r) => r.latitude != null && r.longitude != null)
+                .toList();
+
+            return Padding(
+              padding: const EdgeInsets.all(AppSpacing.screenH),
+              child: Column(
+                children: [
+                  AppCard(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.md,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.location_on_rounded,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Mapa de reportes',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Vista web estable',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  if (withCoords.isEmpty)
+                    const Expanded(
+                      child: EmptyStateWidget(
+                        icon: Icons.map_outlined,
+                        title: 'Aún no hay reportes con ubicación',
+                        subtitle:
+                            'Crea un reporte y permite capturar ubicación para verlo aquí.',
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: ListView.separated(
+                        itemCount: withCoords.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: AppSpacing.md),
+                        itemBuilder: (context, index) {
+                          final report = withCoords[index];
+                          return AppCard(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  report.title,
+                                  style: Theme.of(context).textTheme.titleMedium,
+                                ),
+                                const SizedBox(height: AppSpacing.xs),
+                                Text(report.category),
+                                const SizedBox(height: AppSpacing.sm),
+                                Text(
+                                  'Lat: ${report.latitude!.toStringAsFixed(5)} | Lng: ${report.longitude!.toStringAsFixed(5)}',
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: reportsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) => Center(child: Text(error.toString())),
+        data: (reports) {
+          final markers = reports
+              .where((r) => r.latitude != null && r.longitude != null)
+              .map(
+                (report) => Marker(
+                  markerId: MarkerId(report.id),
+                  position: LatLng(report.latitude!, report.longitude!),
+                  infoWindow: InfoWindow(
+                    title: report.title,
+                    snippet: '${report.category} - ${report.status}',
+                  ),
+                ),
+              )
+              .toSet();
+
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: GoogleMap(
+                  onMapCreated: _onMapCreated,
+                  initialCameraPosition: const CameraPosition(
+                    target: _initialPosition,
+                    zoom: 14,
+                  ),
+                  markers: markers,
+                  zoomControlsEnabled: false,
+                  myLocationEnabled: _locationEnabled,
+                  myLocationButtonEnabled: false,
+                  compassEnabled: true,
+                  mapToolbarEnabled: false,
+                ),
+              ),
+              Positioned(
+                top: MediaQuery.of(context).padding.top + AppSpacing.md,
+                left: AppSpacing.screenH,
+                right: AppSpacing.screenH,
+                child: AppCard(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.lg,
                     vertical: AppSpacing.md,
@@ -130,123 +221,31 @@ class _MapScreenState extends State<MapScreen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Vista web temporal',
+                              markers.isEmpty
+                                  ? 'No hay reportes con ubicación aún'
+                                  : 'Mostrando ${markers.length} reportes con ubicación',
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ],
                         ),
                       ),
+                      IconButton(
+                        onPressed: _isLoadingLocation ? null : _goToCurrentLocation,
+                        icon: _isLoadingLocation
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.my_location_rounded),
+                      ),
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xl),
-                Expanded(
-                  child: Center(
-                    child: AppCard(
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.xl),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.map_outlined,
-                              size: 56,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            const SizedBox(height: AppSpacing.lg),
-                            Text(
-                              'El mapa interactivo estará activo en Android.',
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-                            Text(
-                              'En Chrome lo dejamos estable para que no rompa la app mientras cierras el proyecto.',
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    final theme = Theme.of(context);
-    final topInset = MediaQuery.of(context).padding.top;
-
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: GoogleMap(
-              onMapCreated: _onMapCreated,
-              initialCameraPosition: const CameraPosition(
-                target: _initialPosition,
-                zoom: 14,
               ),
-              markers: _markers,
-              zoomControlsEnabled: false,
-              myLocationEnabled: _locationEnabled,
-              myLocationButtonEnabled: false,
-              compassEnabled: true,
-              mapToolbarEnabled: false,
-            ),
-          ),
-          Positioned(
-            top: topInset + AppSpacing.md,
-            left: AppSpacing.screenH,
-            right: AppSpacing.screenH,
-            child: AppCard(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.md,
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.location_on_rounded,
-                    color: theme.colorScheme.primary,
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Mapa de reportes',
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Mostrando incidentes cercanos',
-                          style: theme.textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: _isLoadingLocation ? null : _goToCurrentLocation,
-                    icon: _isLoadingLocation
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.my_location_rounded),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
