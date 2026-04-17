@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../theme/colors.dart';
-import '../../widgets/primary_button.dart';
-import '../../widgets/custom_textfield.dart';
+import '../../../../theme/colors.dart';
+import '../../../../widgets/primary_button.dart';
+import '../../../../widgets/custom_textfield.dart';
 
 class CreateReportScreen extends StatefulWidget {
   const CreateReportScreen({super.key});

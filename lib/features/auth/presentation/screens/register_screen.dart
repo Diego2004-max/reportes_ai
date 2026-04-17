@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../theme/colors.dart';
-import '../../widgets/custom_textfield.dart';
-import '../../widgets/primary_button.dart';
-import '../../widgets/custom_app_bar.dart';
+import '../../../../theme/colors.dart';
+import '../../../../widgets/custom_textfield.dart';
+import '../../../../widgets/primary_button.dart';
+import '../../../../widgets/custom_app_bar.dart';
 
 /// Register screen — same design language as LoginScreen.
 /// UI only: no navigation or auth logic is implemented here.

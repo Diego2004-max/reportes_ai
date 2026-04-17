@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../widgets/bottom_nav_bar.dart';
-import 'home/home_screen.dart';
-import 'reports/report_list_screen.dart';
-import 'map/map_screen.dart';
+import '../features/home/presentation/screens/home_screen.dart';
+import '../features/reports/presentation/screens/report_list_screen.dart';
+import '../features/map/presentation/screens/map_screen.dart';
 import 'profile/profile_screen.dart';
-import 'reports/create_report_screen.dart';
+import '../features/reports/presentation/screens/create_report_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});

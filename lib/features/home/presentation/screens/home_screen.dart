@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../theme/colors.dart';
-import '../../widgets/app_card.dart';
-import '../../widgets/report_card.dart';
-import '../../widgets/custom_app_bar.dart';
-import '../../widgets/bottom_nav_bar.dart';
-import '../../widgets/empty_state.dart';
-import '../reports/report_detail_screen.dart';
+import '../../../../theme/colors.dart';
+import '../../../../widgets/app_card.dart';
+import '../../../../widgets/report_card.dart';
+import '../../../../widgets/custom_app_bar.dart';
+import '../../../../widgets/bottom_nav_bar.dart';
+import '../../../../widgets/empty_state.dart';
+import '../../../reports/presentation/screens/report_detail_screen.dart';
 
 /// Home (Dashboard) screen.
 /// Shows statistics cards, a recent reports section, and the bottom nav bar.

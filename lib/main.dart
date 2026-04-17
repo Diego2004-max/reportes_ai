@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'theme/theme.dart';
-import 'screens/auth/login_screen.dart';
+import 'features/auth/presentation/screens/login_screen.dart';
 
 void main() {
   runApp(const ReportesIAApp());
