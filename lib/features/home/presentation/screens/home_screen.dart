@@ -10,6 +10,7 @@ import 'package:reportes_ai/shared/widgets/empty_state.dart';
 import 'package:reportes_ai/shared/widgets/report_card.dart';
 import 'package:reportes_ai/state/report_provider.dart';
 import 'package:reportes_ai/state/session_provider.dart';
+import 'package:reportes_ai/features/notifications/presentation/screens/notifications_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -28,6 +29,10 @@ class HomeScreen extends ConsumerWidget {
         actions: [
           IconButton(
             onPressed: () {
+              Navigator.push(context
+              , MaterialPageRoute(
+                builder: (_) => const NotificationsScreen(),
+              ));
               showModalBottomSheet<void>(
                 context: context,
                 builder: (sheetContext) {
