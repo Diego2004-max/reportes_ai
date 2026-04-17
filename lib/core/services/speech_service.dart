@@ -25,10 +25,9 @@ class SpeechService {
       },
       listenFor: const Duration(seconds: 20),
       pauseFor: const Duration(seconds: 4),
-      partialResults: true,
-      cancelOnError: true,
       listenOptions: SpeechListenOptions(
         partialResults: true,
+        cancelOnError: true,
         listenMode: ListenMode.confirmation,
       ),
     );
