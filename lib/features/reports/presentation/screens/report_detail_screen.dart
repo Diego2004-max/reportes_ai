@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,7 +9,6 @@ import 'package:reportes_ai/data/models/report_model.dart';
 import 'package:reportes_ai/shared/widgets/app_card.dart';
 import 'package:reportes_ai/shared/widgets/custom_app_bar.dart';
 import 'package:reportes_ai/shared/widgets/primary_button.dart';
-import 'package:reportes_ai/shared/widgets/report_audio_player.dart';
 import 'package:reportes_ai/state/report_provider.dart';
 
 class ReportDetailScreen extends ConsumerWidget {
@@ -26,6 +28,7 @@ class ReportDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final hasImage = report.imagePaths.isNotEmpty;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -95,23 +98,18 @@ class ReportDetailScreen extends ConsumerWidget {
                 ),
               ),
             ],
-            if (report.audioPath != null &&
-                report.audioPath!.trim().isNotEmpty) ...[
+            if (hasImage) ...[
               const SizedBox(height: AppSpacing.lg),
               AppCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Audio adjunto',
+                      'Imagen adjunta',
                       style: theme.textTheme.titleMedium,
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    const Text(
-                      'Reproduce la evidencia de voz registrada en este reporte.',
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    ReportAudioPlayer(audioPath: report.audioPath!),
+                    _ReportImagePreview(imagePath: report.imagePaths.first),
                   ],
                 ),
               ),
@@ -133,6 +131,57 @@ class ReportDetailScreen extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ReportImagePreview extends StatelessWidget {
+  const _ReportImagePreview({
+    required this.imagePath,
+  });
+
+  final String imagePath;
+
+  Future<Uint8List> _loadBytes() {
+    return XFile(imagePath).readAsBytes();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Uint8List>(
+      future: _loadBytes(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                SizedBox(width: 12),
+                Text('Cargando imagen...'),
+              ],
+            ),
+          );
+        }
+
+        if (snapshot.hasError || !snapshot.hasData) {
+          return const Text('No se pudo cargar la imagen adjunta.');
+        }
+
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          child: Image.memory(
+            snapshot.data!,
+            height: 220,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          ),
+        );
+      },
     );
   }
 }

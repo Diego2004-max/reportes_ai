@@ -24,7 +24,8 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _onCreateReportTap() {
-    Navigator.of(context).push(
+    Navigator.push(
+      context,
       MaterialPageRoute(
         builder: (_) => const CreateReportScreen(),
       ),
