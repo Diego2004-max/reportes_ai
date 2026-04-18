@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -44,8 +45,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     final bg =
         backgroundColor ?? theme.appBarTheme.backgroundColor ?? theme.scaffoldBackgroundColor;
 
-    final backBg = isDark ? const Color(0xFF132036) : Colors.white;
-
     return AppBar(
       backgroundColor: bg,
       foregroundColor: fg,
@@ -60,12 +59,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               icon: Container(
                 padding: const EdgeInsets.all(AppSpacing.xs),
                 decoration: BoxDecoration(
-                  color: backBg,
+                  color: isDark ? const Color(0xFF1B2940) : Colors.white,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   border: Border.all(
-                    color: isDark
-                        ? const Color(0xFF22324B)
-                        : const Color(0xFFE5EAF2),
+                    color: isDark ? const Color(0xFF26364D) : AppColors.border,
                   ),
                 ),
                 child: Icon(

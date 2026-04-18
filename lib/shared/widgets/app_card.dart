@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
 
 class AppCard extends StatelessWidget {
@@ -24,23 +25,21 @@ class AppCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final radius = borderRadius ?? AppSpacing.radiusXxl;
-    final cardColor =
-        color ?? theme.cardTheme.color ?? theme.colorScheme.surface;
 
     return Container(
       margin: margin,
       decoration: BoxDecoration(
-        color: cardColor,
+        color: color ?? theme.cardColor,
         borderRadius: BorderRadius.circular(radius),
         border: Border.all(
-          color: isDark ? const Color(0xFF1D2B41) : const Color(0xFFE6ECF3),
+          color: isDark ? const Color(0xFF26364D) : AppColors.border,
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(isDark ? 28 : 14),
-            blurRadius: isDark ? 18 : 14,
-            offset: const Offset(0, 8),
+            color: Colors.black.withAlpha(isDark ? 18 : 10),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -82,52 +81,60 @@ class StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+
     final badgeBg = iconBackground ??
         (theme.brightness == Brightness.dark
-            ? scheme.primary.withAlpha(40)
-            : scheme.primary.withAlpha(22));
+            ? scheme.primary.withAlpha(24)
+            : scheme.primary.withAlpha(14));
 
     return AppCard(
       onTap: onTap,
-      padding: const EdgeInsets.all(14),
-      child: SizedBox(
-        height: 112,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              decoration: BoxDecoration(
-                color: badgeBg,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-              ),
-              child: Icon(
-                icon,
-                color: iconColor ?? scheme.primary,
-                size: 20,
-              ),
-            ),
-            const Spacer(),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                value,
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
+      padding: const EdgeInsets.all(12),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: badgeBg,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                ),
+                child: Icon(
+                  icon,
+                  color: iconColor ?? scheme.primary,
+                  size: 18,
                 ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium?.copyWith(fontSize: 13),
-            ),
-          ],
-        ),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Text(
+                    label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontSize: 12.5,
+                      height: 1.1,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
