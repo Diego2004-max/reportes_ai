@@ -22,8 +22,9 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = borderRadius ?? AppSpacing.radiusXxl;
-    final cardColor =
-        color ?? Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface;
+    final cardColor = color ??
+        Theme.of(context).cardTheme.color ??
+        Theme.of(context).colorScheme.surface;
 
     return Container(
       margin: margin,
@@ -79,33 +80,45 @@ class StatCard extends StatelessWidget {
 
     return AppCard(
       onTap: onTap,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: iconBackground ?? scheme.primary.withAlpha(30),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+      padding: const EdgeInsets.all(14),
+      child: SizedBox(
+        height: 112,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: iconBackground ?? scheme.primary.withAlpha(30),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+              ),
+              child: Icon(
+                icon,
+                color: iconColor ?? scheme.primary,
+                size: 20,
+              ),
             ),
-            child: Icon(
-              icon,
-              color: iconColor ?? scheme.primary,
-              size: 22,
+            const Spacer(),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            value,
-            style: theme.textTheme.headlineMedium?.copyWith(fontSize: 26),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            label,
-            style: theme.textTheme.bodyMedium?.copyWith(fontSize: 13),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium?.copyWith(fontSize: 13),
+            ),
+          ],
+        ),
       ),
     );
   }

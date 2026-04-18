@@ -62,8 +62,7 @@ class HomeScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(userReportsProvider);
-          ref.invalidate(userReportStatsProvider);
+          refreshReports(ref);
         },
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.screenH),

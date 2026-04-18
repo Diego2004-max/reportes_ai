@@ -24,11 +24,16 @@ class ReportRepositoryImpl {
     List<String> imagePaths = const [],
     String? audioPath,
   }) async {
+    final cleanDescription = description.trim();
+    final cleanTitle = title.trim().isEmpty
+        ? _buildFallbackTitle(cleanDescription)
+        : title.trim();
+
     final report = ReportModel(
       id: _uuid.v4(),
       userId: userId,
-      title: title.trim(),
-      description: description.trim(),
+      title: cleanTitle,
+      description: cleanDescription,
       category: category,
       status: status,
       createdAt: DateTime.now(),
@@ -40,6 +45,8 @@ class ReportRepositoryImpl {
     );
 
     await HiveService.reportsBox.put(report.id, report.toMap());
+    await HiveService.reportsBox.flush();
+
     return report;
   }
 
@@ -72,5 +79,23 @@ class ReportRepositoryImpl {
 
   Future<void> deleteReport(String reportId) async {
     await HiveService.reportsBox.delete(reportId);
+    await HiveService.reportsBox.flush();
+  }
+
+  String _buildFallbackTitle(String description) {
+    final clean = description.trim().replaceAll('\n', ' ');
+
+    if (clean.isEmpty) {
+      return 'Reporte ciudadano';
+    }
+
+    final words = clean.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
+    final short = words.take(5).join(' ');
+
+    if (short.isEmpty) {
+      return 'Reporte ciudadano';
+    }
+
+    return short[0].toUpperCase() + short.substring(1);
   }
 }

@@ -16,10 +16,18 @@ class ReportDetailScreen extends ConsumerWidget {
 
   final ReportModel report;
 
+  bool get _showSecondaryCoordinates {
+    if (report.latitude == null || report.longitude == null) return false;
+    if (report.locationLabel == null) return true;
+    return !report.locationLabel!.startsWith('Lat ');
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: const CustomAppBar(
         title: 'Detalle del reporte',
         showBack: true,
@@ -35,7 +43,7 @@ class ReportDetailScreen extends ConsumerWidget {
                 children: [
                   Text(
                     report.title,
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: theme.textTheme.titleLarge,
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(report.category),
@@ -55,7 +63,7 @@ class ReportDetailScreen extends ConsumerWidget {
                 children: [
                   Text(
                     'Descripción',
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: theme.textTheme.titleMedium,
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(report.description),
@@ -72,11 +80,11 @@ class ReportDetailScreen extends ConsumerWidget {
                   children: [
                     Text(
                       'Ubicación',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: theme.textTheme.titleMedium,
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     if (report.locationLabel != null) Text(report.locationLabel!),
-                    if (report.latitude != null && report.longitude != null) ...[
+                    if (_showSecondaryCoordinates) ...[
                       const SizedBox(height: AppSpacing.xs),
                       Text(
                         'Lat: ${report.latitude!.toStringAsFixed(5)} | Lng: ${report.longitude!.toStringAsFixed(5)}',
@@ -86,7 +94,8 @@ class ReportDetailScreen extends ConsumerWidget {
                 ),
               ),
             ],
-            if (report.audioPath != null) ...[
+            if (report.audioPath != null &&
+                report.audioPath!.trim().isNotEmpty) ...[
               const SizedBox(height: AppSpacing.lg),
               AppCard(
                 child: Column(
@@ -94,7 +103,7 @@ class ReportDetailScreen extends ConsumerWidget {
                   children: [
                     Text(
                       'Audio adjunto',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: theme.textTheme.titleMedium,
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     const Text(
@@ -107,13 +116,11 @@ class ReportDetailScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xxl),
             PrimaryButton(
               label: 'Eliminar reporte',
-              backgroundColor: Theme.of(context).colorScheme.errorContainer,
-              foregroundColor: Theme.of(context).colorScheme.error,
+              backgroundColor: theme.colorScheme.errorContainer,
+              foregroundColor: theme.colorScheme.error,
               onPressed: () async {
                 await ref.read(reportRepositoryProvider).deleteReport(report.id);
-                ref.invalidate(userReportsProvider);
-                ref.invalidate(userReportStatsProvider);
-                ref.invalidate(allReportsProvider);
+                refreshReports(ref);
 
                 if (context.mounted) {
                   Navigator.pop(context);

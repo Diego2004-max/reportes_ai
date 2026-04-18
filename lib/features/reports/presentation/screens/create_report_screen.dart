@@ -93,13 +93,25 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
 
   String _buildTitleFromDescription(String text) {
     final clean = text.trim().replaceAll('\n', ' ');
-    if (clean.isEmpty) return '';
+    if (clean.isEmpty) return 'Reporte ciudadano';
 
     final words = clean.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
     final short = words.take(5).join(' ');
 
-    if (short.isEmpty) return '';
+    if (short.isEmpty) return 'Reporte ciudadano';
     return short[0].toUpperCase() + short.substring(1);
+  }
+
+  String get _effectiveTitle {
+    final typed = _titleController.text.trim();
+    if (typed.isNotEmpty) return typed;
+    return _buildTitleFromDescription(_descriptionController.text);
+  }
+
+  bool get _showSecondaryCoordinates {
+    if (_currentPosition == null) return false;
+    if (_locationLabel == null) return true;
+    return !_locationLabel!.startsWith('Lat ');
   }
 
   Future<void> _toggleVoiceDictation() async {
@@ -109,7 +121,6 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
 
         if (!mounted) return;
         setState(() => _isListening = false);
-
         return;
       }
 
@@ -157,28 +168,35 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
   }
 
   Future<void> _toggleRecording() async {
+    if (_isLoading) return;
+
     try {
       if (_isRecording) {
+        setState(() => _isRecording = false);
+
         final path = await _voiceService.stopRecording();
 
         if (!mounted) return;
 
+        if (path != null && path.isNotEmpty) {
+          setState(() => _audioPath = path);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Audio grabado correctamente')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No se obtuvo un archivo de audio')),
+          );
+        }
+      } else {
         setState(() {
-          _isRecording = false;
-          _audioPath = path;
+          _audioPath = null;
+          _isRecording = true;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Audio grabado correctamente')),
-        );
-      } else {
         await _voiceService.startRecording();
 
         if (!mounted) return;
-
-        setState(() {
-          _isRecording = true;
-        });
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Grabación iniciada')),
@@ -213,8 +231,8 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
     try {
       await ref.read(reportRepositoryProvider).createReport(
             userId: userId,
-            title: _titleController.text,
-            description: _descriptionController.text,
+            title: _effectiveTitle,
+            description: _descriptionController.text.trim(),
             category: _selectedCategory,
             locationLabel: _locationLabel,
             latitude: _currentPosition?.latitude,
@@ -222,9 +240,7 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
             audioPath: _audioPath,
           );
 
-      ref.invalidate(userReportsProvider);
-      ref.invalidate(userReportStatsProvider);
-      ref.invalidate(allReportsProvider);
+      refreshReports(ref);
 
       if (!mounted) return;
 
@@ -268,7 +284,6 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: AppSpacing.xl),
-
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppSpacing.lg),
@@ -292,60 +307,36 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                         style: theme.textTheme.bodyMedium,
                       ),
                       const SizedBox(height: AppSpacing.md),
-                      Wrap(
-                        spacing: AppSpacing.md,
-                        runSpacing: AppSpacing.md,
-                        children: [
-                          FilledButton.icon(
-                            onPressed: _toggleVoiceDictation,
-                            icon: Icon(
-                              _isListening
-                                  ? Icons.stop_circle_outlined
-                                  : Icons.keyboard_voice_rounded,
-                            ),
-                            label: Text(
-                              _isListening
-                                  ? 'Detener dictado'
-                                  : 'Dictar reporte',
-                            ),
-                          ),
-                          if (_descriptionController.text.trim().isNotEmpty)
-                            OutlinedButton.icon(
-                              onPressed: () {
-                                setState(() {
-                                  _descriptionController.clear();
-                                  if (_titleController.text ==
-                                      _buildTitleFromDescription(
-                                        _descriptionController.text,
-                                      )) {
-                                    _titleController.clear();
-                                  }
-                                });
-                              },
-                              icon: const Icon(Icons.clear_rounded),
-                              label: const Text('Limpiar dictado'),
-                            ),
-                        ],
+                      FilledButton.icon(
+                        onPressed: _toggleVoiceDictation,
+                        icon: Icon(
+                          _isListening
+                              ? Icons.stop_circle_outlined
+                              : Icons.keyboard_voice_rounded,
+                        ),
+                        label: Text(
+                          _isListening
+                              ? 'Detener dictado'
+                              : 'Dictar reporte',
+                        ),
                       ),
                     ],
                   ),
                 ),
-
                 const SizedBox(height: AppSpacing.xl),
-
                 CustomTextField(
                   label: 'Título',
                   controller: _titleController,
-                  hint: 'Ej: Hueco grande en la avenida',
+                  hint: 'Se puede generar automáticamente',
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Ingresa un título';
+                    if (_descriptionController.text.trim().isEmpty &&
+                        (value == null || value.trim().isEmpty)) {
+                      return 'Ingresa un título o dicta el reporte';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: AppSpacing.lg),
-
                 Text('Categoría', style: theme.textTheme.titleMedium),
                 const SizedBox(height: AppSpacing.sm),
                 Container(
@@ -373,24 +364,20 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: AppSpacing.lg),
-
                 CustomTextField(
                   label: 'Descripción',
                   controller: _descriptionController,
-                  hint: 'Describe lo ocurrido...',
+                  hint: 'Se llenará con dictado o puedes escribir manualmente',
                   maxLines: 5,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Describe el incidente';
+                      return 'Describe el incidente o usa dictado por voz';
                     }
                     return null;
                   },
                 ),
-
                 const SizedBox(height: AppSpacing.lg),
-
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppSpacing.lg),
@@ -427,13 +414,14 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                               _locationLabel ?? 'Sin ubicación capturada',
                               style: theme.textTheme.bodyMedium,
                             ),
-                            if (_currentPosition != null) ...[
-                              const SizedBox(height: AppSpacing.xs),
-                              Text(
-                                'Lat ${_currentPosition!.latitude.toStringAsFixed(5)}, Lng ${_currentPosition!.longitude.toStringAsFixed(5)}',
-                                style: theme.textTheme.bodySmall,
+                            if (_showSecondaryCoordinates)
+                              Padding(
+                                padding: const EdgeInsets.only(top: AppSpacing.xs),
+                                child: Text(
+                                  'Lat ${_currentPosition!.latitude.toStringAsFixed(5)}, Lng ${_currentPosition!.longitude.toStringAsFixed(5)}',
+                                  style: theme.textTheme.bodySmall,
+                                ),
                               ),
-                            ],
                           ],
                         ),
                       const SizedBox(height: AppSpacing.md),
@@ -446,9 +434,7 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: AppSpacing.lg),
-
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppSpacing.lg),
@@ -461,14 +447,16 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Audio del reporte',
+                        'Audio como evidencia',
                         style: theme.textTheme.titleMedium,
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
-                        _audioPath == null
-                            ? 'Graba un audio como evidencia opcional'
-                            : 'Audio adjunto correctamente',
+                        _isRecording
+                            ? 'Grabando audio...'
+                            : _audioPath == null
+                                ? 'Opcional: graba un audio corto como evidencia'
+                                : 'Audio adjunto correctamente',
                         style: theme.textTheme.bodyMedium,
                       ),
                       const SizedBox(height: AppSpacing.md),
@@ -486,9 +474,7 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: AppSpacing.xl),
-
                 PrimaryButton(
                   label: 'Enviar reporte',
                   onPressed: _submitReport,

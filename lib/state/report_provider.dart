@@ -8,6 +8,22 @@ final reportRepositoryProvider = Provider<ReportRepositoryImpl>((ref) {
   return ReportRepositoryImpl();
 });
 
+class ReportRefreshNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void refresh() {
+    state++;
+  }
+}
+
+final reportRefreshProvider =
+    NotifierProvider<ReportRefreshNotifier, int>(ReportRefreshNotifier.new);
+
+void refreshReports(WidgetRef ref) {
+  ref.read(reportRefreshProvider.notifier).refresh();
+}
+
 class ReportStats {
   final int total;
   final int submitted;
@@ -23,10 +39,13 @@ class ReportStats {
 }
 
 final allReportsProvider = FutureProvider<List<ReportModel>>((ref) async {
+  ref.watch(reportRefreshProvider);
   return ref.read(reportRepositoryProvider).getAllReports();
 });
 
 final userReportsProvider = FutureProvider<List<ReportModel>>((ref) async {
+  ref.watch(reportRefreshProvider);
+
   final session = ref.watch(sessionProvider);
   final userId = session.userId;
 

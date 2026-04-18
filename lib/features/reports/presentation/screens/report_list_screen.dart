@@ -144,7 +144,7 @@ class _ReportListScreenState extends ConsumerState<ReportListScreen> {
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    ref.invalidate(userReportsProvider);
+                    refreshReports(ref);
                   },
                   child: ListView.builder(
                     padding: const EdgeInsets.all(AppSpacing.screenH),
