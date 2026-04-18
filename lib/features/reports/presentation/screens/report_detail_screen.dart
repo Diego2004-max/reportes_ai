@@ -6,6 +6,7 @@ import 'package:reportes_ai/data/models/report_model.dart';
 import 'package:reportes_ai/shared/widgets/app_card.dart';
 import 'package:reportes_ai/shared/widgets/custom_app_bar.dart';
 import 'package:reportes_ai/shared/widgets/primary_button.dart';
+import 'package:reportes_ai/shared/widgets/report_audio_player.dart';
 import 'package:reportes_ai/state/report_provider.dart';
 
 class ReportDetailScreen extends ConsumerWidget {
@@ -107,8 +108,10 @@ class ReportDetailScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     const Text(
-                      'Este reporte contiene una grabación de voz guardada.',
+                      'Reproduce la evidencia de voz registrada en este reporte.',
                     ),
+                    const SizedBox(height: AppSpacing.md),
+                    ReportAudioPlayer(audioPath: report.audioPath!),
                   ],
                 ),
               ),
