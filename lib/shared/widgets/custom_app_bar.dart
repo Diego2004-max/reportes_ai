@@ -37,13 +37,21 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final fg = foregroundColor ?? theme.colorScheme.onSurface;
-    final bg = backgroundColor ?? theme.scaffoldBackgroundColor;
+    final isDark = theme.brightness == Brightness.dark;
+
+    final fg =
+        foregroundColor ?? theme.appBarTheme.foregroundColor ?? theme.colorScheme.onSurface;
+    final bg =
+        backgroundColor ?? theme.appBarTheme.backgroundColor ?? theme.scaffoldBackgroundColor;
+
+    final backBg = isDark ? const Color(0xFF132036) : Colors.white;
 
     return AppBar(
       backgroundColor: bg,
       foregroundColor: fg,
       elevation: elevation ?? 0,
+      scrolledUnderElevation: 0,
+      shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       centerTitle: centerTitle,
       leading: showBack
@@ -52,8 +60,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               icon: Container(
                 padding: const EdgeInsets.all(AppSpacing.xs),
                 decoration: BoxDecoration(
-                  color: theme.cardTheme.color ?? theme.colorScheme.surface,
+                  color: backBg,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF22324B)
+                        : const Color(0xFFE5EAF2),
+                  ),
                 ),
                 child: Icon(
                   Icons.arrow_back_ios_new_rounded,
@@ -69,10 +82,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 18,
+                  style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: fg,
                   ),
                 ),
                 Text(
@@ -83,10 +94,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             )
           : Text(
               title,
-              style: TextStyle(
-                fontSize: 18,
+              style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
-                color: fg,
               ),
             ),
       actions: actions != null

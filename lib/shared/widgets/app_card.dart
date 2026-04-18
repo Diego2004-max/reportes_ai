@@ -21,21 +21,26 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final radius = borderRadius ?? AppSpacing.radiusXxl;
-    final cardColor = color ??
-        Theme.of(context).cardTheme.color ??
-        Theme.of(context).colorScheme.surface;
+    final cardColor =
+        color ?? theme.cardTheme.color ?? theme.colorScheme.surface;
 
     return Container(
       margin: margin,
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(radius),
+        border: Border.all(
+          color: isDark ? const Color(0xFF1D2B41) : const Color(0xFFE6ECF3),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(18),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
+            color: Colors.black.withAlpha(isDark ? 28 : 14),
+            blurRadius: isDark ? 18 : 14,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -77,6 +82,10 @@ class StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final badgeBg = iconBackground ??
+        (theme.brightness == Brightness.dark
+            ? scheme.primary.withAlpha(40)
+            : scheme.primary.withAlpha(22));
 
     return AppCard(
       onTap: onTap,
@@ -89,7 +98,7 @@ class StatCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: iconBackground ?? scheme.primary.withAlpha(30),
+                color: badgeBg,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               ),
               child: Icon(
