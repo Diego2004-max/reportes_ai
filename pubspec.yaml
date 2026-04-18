@@ -51,6 +51,7 @@ dependencies:
   record: ^6.2.0
   speech_to_text: ^7.3.0
   just_audio: ^0.10.5
+  image_picker: ^1.2.1
 
 dev_dependencies:
   flutter_test:

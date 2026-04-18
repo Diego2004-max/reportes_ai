@@ -1,11 +1,13 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:reportes_ai/app/theme/app_spacing.dart';
 import 'package:reportes_ai/core/services/location_service.dart';
 import 'package:reportes_ai/core/services/speech_service.dart';
-import 'package:reportes_ai/core/services/voice_service.dart';
 import 'package:reportes_ai/shared/widgets/custom_textfield.dart';
 import 'package:reportes_ai/shared/widgets/primary_button.dart';
 import 'package:reportes_ai/state/report_provider.dart';
@@ -24,19 +26,21 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
   final _descriptionController = TextEditingController();
 
   final LocationService _locationService = LocationService();
-  final VoiceService _voiceService = VoiceService();
   final SpeechService _speechService = SpeechService();
+  final ImagePicker _imagePicker = ImagePicker();
 
   bool _isLoading = false;
   bool _isGettingLocation = false;
-  bool _isRecording = false;
   bool _isListening = false;
+  bool _isPickingImage = false;
 
   String _selectedCategory = 'Infraestructura';
 
   Position? _currentPosition;
   String? _locationLabel;
-  String? _audioPath;
+
+  String? _imagePath;
+  Uint8List? _imageBytes;
 
   final List<String> _categories = const [
     'Infraestructura',
@@ -57,7 +61,6 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    _voiceService.dispose();
     super.dispose();
   }
 
@@ -95,7 +98,8 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
     final clean = text.trim().replaceAll('\n', ' ');
     if (clean.isEmpty) return 'Reporte ciudadano';
 
-    final words = clean.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
+    final words =
+        clean.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
     final short = words.take(5).join(' ');
 
     if (short.isEmpty) return 'Reporte ciudadano';
@@ -134,7 +138,8 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
               TextPosition(offset: _descriptionController.text.length),
             );
 
-            if (_titleController.text.trim().isEmpty && text.trim().isNotEmpty) {
+            if (_titleController.text.trim().isEmpty &&
+                text.trim().isNotEmpty) {
               _titleController.text = _buildTitleFromDescription(text);
               _titleController.selection = TextSelection.fromPosition(
                 TextPosition(offset: _titleController.text.length),
@@ -167,50 +172,77 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
     }
   }
 
-  Future<void> _toggleRecording() async {
-    if (_isLoading) return;
-
+  Future<void> _pickImage(ImageSource source) async {
     try {
-      if (_isRecording) {
-        setState(() => _isRecording = false);
+      setState(() => _isPickingImage = true);
 
-        final path = await _voiceService.stopRecording();
+      final file = await _imagePicker.pickImage(
+        source: source,
+        imageQuality: 75,
+        maxWidth: 1600,
+      );
 
-        if (!mounted) return;
-
-        if (path != null && path.isNotEmpty) {
-          setState(() => _audioPath = path);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Audio grabado correctamente')),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No se obtuvo un archivo de audio')),
-          );
-        }
-      } else {
-        setState(() {
-          _audioPath = null;
-          _isRecording = true;
-        });
-
-        await _voiceService.startRecording();
-
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Grabación iniciada')),
-        );
+      if (file == null) {
+        if (mounted) setState(() => _isPickingImage = false);
+        return;
       }
+
+      final bytes = await file.readAsBytes();
+
+      if (!mounted) return;
+
+      setState(() {
+        _imagePath = file.path;
+        _imageBytes = bytes;
+        _isPickingImage = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Imagen adjunta correctamente')),
+      );
     } catch (e) {
       if (!mounted) return;
 
-      setState(() => _isRecording = false);
+      setState(() => _isPickingImage = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo grabar audio: $e')),
+        SnackBar(content: Text('No se pudo cargar la imagen: $e')),
       );
     }
+  }
+
+  Future<void> _showImageSourceSheet() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_library_outlined),
+                  title: const Text('Seleccionar de galería'),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    _pickImage(ImageSource.gallery);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_camera_outlined),
+                  title: const Text('Tomar foto'),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _submitReport() async {
@@ -237,7 +269,7 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
             locationLabel: _locationLabel,
             latitude: _currentPosition?.latitude,
             longitude: _currentPosition?.longitude,
-            audioPath: _audioPath,
+            imagePaths: _imagePath != null ? [_imagePath!] : const [],
           );
 
       refreshReports(ref);
@@ -328,13 +360,6 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                   label: 'Título',
                   controller: _titleController,
                   hint: 'Se puede generar automáticamente',
-                  validator: (value) {
-                    if (_descriptionController.text.trim().isEmpty &&
-                        (value == null || value.trim().isEmpty)) {
-                      return 'Ingresa un título o dicta el reporte';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Text('Categoría', style: theme.textTheme.titleMedium),
@@ -416,7 +441,8 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                             ),
                             if (_showSecondaryCoordinates)
                               Padding(
-                                padding: const EdgeInsets.only(top: AppSpacing.xs),
+                                padding:
+                                    const EdgeInsets.only(top: AppSpacing.xs),
                                 child: Text(
                                   'Lat ${_currentPosition!.latitude.toStringAsFixed(5)}, Lng ${_currentPosition!.longitude.toStringAsFixed(5)}',
                                   style: theme.textTheme.bodySmall,
@@ -447,29 +473,65 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Audio como evidencia',
+                        'Imagen como evidencia',
                         style: theme.textTheme.titleMedium,
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
-                        _isRecording
-                            ? 'Grabando audio...'
-                            : _audioPath == null
-                                ? 'Opcional: graba un audio corto como evidencia'
-                                : 'Audio adjunto correctamente',
+                        _imagePath == null
+                            ? 'Opcional: adjunta una foto del incidente'
+                            : 'Imagen adjunta correctamente',
                         style: theme.textTheme.bodyMedium,
                       ),
+                      if (_imageBytes != null) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        ClipRRect(
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusMd),
+                          child: Image.memory(
+                            _imageBytes!,
+                            height: 180,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: AppSpacing.md),
-                      FilledButton.icon(
-                        onPressed: _toggleRecording,
-                        icon: Icon(
-                          _isRecording ? Icons.stop_rounded : Icons.mic_rounded,
-                        ),
-                        label: Text(
-                          _isRecording
-                              ? 'Detener grabación'
-                              : 'Grabar audio',
-                        ),
+                      Wrap(
+                        spacing: AppSpacing.md,
+                        runSpacing: AppSpacing.md,
+                        children: [
+                          FilledButton.icon(
+                            onPressed:
+                                _isPickingImage ? null : _showImageSourceSheet,
+                            icon: _isPickingImage
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(Icons.add_a_photo_outlined),
+                            label: Text(
+                              _imagePath == null
+                                  ? 'Subir imagen'
+                                  : 'Cambiar imagen',
+                            ),
+                          ),
+                          if (_imagePath != null)
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  _imagePath = null;
+                                  _imageBytes = null;
+                                });
+                              },
+                              icon: const Icon(Icons.delete_outline),
+                              label: const Text('Quitar imagen'),
+                            ),
+                        ],
                       ),
                     ],
                   ),
