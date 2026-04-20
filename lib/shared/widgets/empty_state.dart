@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../app/theme/app_colors.dart';
-import '../../app/theme/app_spacing.dart' show AppSpacing;
 
-/// Centered empty-state placeholder with icon, title, and optional CTA.
+import 'package:reportes_ai/app/theme/app_colors.dart';
+import 'package:reportes_ai/app/theme/app_spacing.dart';
+
 class EmptyStateWidget extends StatelessWidget {
   const EmptyStateWidget({
     super.key,
@@ -24,29 +24,43 @@ class EmptyStateWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final ic = iconColor ?? AppColors.textDisabled;
+    final isDark = theme.brightness == Brightness.dark;
+
+    final resolvedIconColor = iconColor ??
+        (isDark ? const Color(0xFF9FB0C7) : AppColors.textDisabled);
+
+    final circleColor =
+        isDark ? const Color(0xFF1B2940) : AppColors.surfaceVariant;
 
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xxxl, vertical: AppSpacing.huge),
+          horizontal: AppSpacing.xxxl,
+          vertical: AppSpacing.huge,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Icon container
             Container(
               padding: const EdgeInsets.all(AppSpacing.xxl),
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
+                color: circleColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 48, color: ic),
+              child: Icon(
+                icon,
+                size: 48,
+                color: resolvedIconColor,
+              ),
             ),
             const SizedBox(height: AppSpacing.xxl),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: theme.textTheme.titleLarge?.copyWith(fontSize: 20),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
@@ -60,16 +74,6 @@ class EmptyStateWidget extends StatelessWidget {
                 onPressed: onAction,
                 icon: const Icon(Icons.add_rounded, size: 18),
                 label: Text(actionLabel!),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.textOnPrimary,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.xxl, vertical: AppSpacing.md),
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusMd),
-                  ),
-                ),
               ),
             ],
           ],

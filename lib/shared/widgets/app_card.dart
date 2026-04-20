@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../app/theme/app_colors.dart';
-import '../../app/theme/app_spacing.dart';
+import 'package:reportes_ai/app/theme/app_colors.dart';
+import 'package:reportes_ai/app/theme/app_spacing.dart';
 
-/// White surface card with soft shadow and rounded corners.
-/// Use instead of raw [Card] for all grouped-content areas.
 class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
@@ -13,7 +11,6 @@ class AppCard extends StatelessWidget {
     this.borderRadius,
     this.color,
     this.onTap,
-    this.elevation,
   });
 
   final Widget child;
@@ -22,27 +19,27 @@ class AppCard extends StatelessWidget {
   final double? borderRadius;
   final Color? color;
   final VoidCallback? onTap;
-  final double? elevation;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final radius = borderRadius ?? AppSpacing.radiusXxl;
 
     return Container(
       margin: margin,
       decoration: BoxDecoration(
-        color: color ?? AppColors.surface,
+        color: color ?? theme.cardColor,
         borderRadius: BorderRadius.circular(radius),
+        border: Border.all(
+          color: isDark ? const Color(0xFF26364D) : AppColors.border,
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-          BoxShadow(
-            color: AppColors.shadowMedium.withAlpha(30),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
+            color: Colors.black.withAlpha(isDark ? 18 : 10),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -52,11 +49,8 @@ class AppCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(radius),
-          splashColor: AppColors.primaryLight.withAlpha(20),
-          highlightColor: Colors.transparent,
           child: Padding(
-            padding: padding ??
-                const EdgeInsets.all(AppSpacing.lg),
+            padding: padding ?? const EdgeInsets.all(AppSpacing.lg),
             child: child,
           ),
         ),
@@ -65,7 +59,6 @@ class AppCard extends StatelessWidget {
   }
 }
 
-/// Stat / summary tile used on the Home dashboard.
 class StatCard extends StatelessWidget {
   const StatCard({
     super.key,
@@ -87,34 +80,61 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final ic = iconColor ?? AppColors.primary;
-    final ibg = iconBackground ?? AppColors.infoLight;
+    final scheme = theme.colorScheme;
+
+    final badgeBg = iconBackground ??
+        (theme.brightness == Brightness.dark
+            ? scheme.primary.withAlpha(24)
+            : scheme.primary.withAlpha(14));
 
     return AppCard(
       onTap: onTap,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: ibg,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            ),
-            child: Icon(icon, color: ic, size: 22),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            value,
-            style: theme.textTheme.headlineMedium?.copyWith(fontSize: 26),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            label,
-            style: theme.textTheme.bodyMedium?.copyWith(fontSize: 13),
-          ),
-        ],
+      padding: const EdgeInsets.all(12),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: badgeBg,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                ),
+                child: Icon(
+                  icon,
+                  color: iconColor ?? scheme.primary,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Text(
+                    label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontSize: 12.5,
+                      height: 1.1,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

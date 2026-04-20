@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:reportes_ai/app/router/app_router.dart';
 import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
+import 'package:reportes_ai/features/notifications/presentation/screens/notifications_screen.dart';
+import 'package:reportes_ai/features/profile/presentation/screens/edit_profile_screen.dart';
 import 'package:reportes_ai/shared/widgets/app_card.dart';
 import 'package:reportes_ai/shared/widgets/custom_app_bar.dart';
 import 'package:reportes_ai/state/report_provider.dart';
@@ -95,6 +97,19 @@ class ProfileScreen extends ConsumerWidget {
             child: Column(
               children: [
                 _ActionTile(
+                  icon: Icons.person_outline_rounded,
+                  title: 'Editar perfil',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EditProfileScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+                _ActionTile(
                   icon: Icons.dark_mode_outlined,
                   title: 'Cambiar tema',
                   onTap: () async {
@@ -106,9 +121,10 @@ class ProfileScreen extends ConsumerWidget {
                   icon: Icons.notifications_outlined,
                   title: 'Ver notificaciones',
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('No tienes notificaciones nuevas'),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const NotificationsScreen(),
                       ),
                     );
                   },

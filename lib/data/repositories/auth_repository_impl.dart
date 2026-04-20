@@ -1,10 +1,9 @@
-import 'package:uuid/uuid.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:reportes_ai/data/local/hive/hive_service.dart';
 import 'package:reportes_ai/data/models/user_model.dart';
 
 class AuthRepositoryImpl {
-  final Uuid _uuid = const Uuid();
+  final SupabaseClient _client = Supabase.instance.client;
 
   Future<UserModel> register({
     required String fullName,
@@ -13,23 +12,35 @@ class AuthRepositoryImpl {
   }) async {
     final normalizedEmail = email.trim().toLowerCase();
 
-    for (final raw in HiveService.usersBox.values) {
-      final user = UserModel.fromMap(Map<String, dynamic>.from(raw as Map));
-      if (user.email.toLowerCase() == normalizedEmail) {
-        throw Exception('Ese correo ya está registrado');
+    try {
+      final response = await _client.auth.signUp(
+        email: normalizedEmail,
+        password: password,
+      );
+
+      final authUser = response.user;
+      if (authUser == null) {
+        throw Exception('No se pudo registrar el usuario');
       }
+
+      await _client.from('profiles').upsert({
+        'id': authUser.id,
+        'full_name': fullName.trim(),
+        'email': normalizedEmail,
+      });
+
+      return UserModel(
+        id: authUser.id,
+        fullName: fullName.trim(),
+        email: normalizedEmail,
+        password: '',
+        createdAt: DateTime.now(),
+      );
+    } on AuthException catch (e) {
+      throw Exception(e.message);
+    } catch (_) {
+      throw Exception('No se pudo registrar el usuario');
     }
-
-    final user = UserModel(
-      id: _uuid.v4(),
-      fullName: fullName.trim(),
-      email: normalizedEmail,
-      password: password,
-      createdAt: DateTime.now(),
-    );
-
-    await HiveService.usersBox.put(user.id, user.toMap());
-    return user;
   }
 
   Future<UserModel> login({
@@ -38,42 +49,69 @@ class AuthRepositoryImpl {
   }) async {
     final normalizedEmail = email.trim().toLowerCase();
 
-    for (final raw in HiveService.usersBox.values) {
-      final user = UserModel.fromMap(Map<String, dynamic>.from(raw as Map));
-      if (user.email.toLowerCase() == normalizedEmail &&
-          user.password == password) {
-        return user;
-      }
-    }
+    try {
+      final response = await _client.auth.signInWithPassword(
+        email: normalizedEmail,
+        password: password,
+      );
 
-    throw Exception('Correo o contraseña incorrectos');
+      final authUser = response.user;
+      if (authUser == null) {
+        throw Exception('Correo o contraseña incorrectos');
+      }
+
+      final profile = await _client
+          .from('profiles')
+          .select()
+          .eq('id', authUser.id)
+          .single();
+
+      return UserModel(
+        id: authUser.id,
+        fullName: profile['full_name'] as String,
+        email: profile['email'] as String,
+        password: '',
+        createdAt: DateTime.parse(profile['created_at'] as String),
+      );
+    } on AuthException catch (e) {
+      throw Exception(e.message);
+    } catch (_) {
+      throw Exception('Correo o contraseña incorrectos');
+    }
   }
 
   Future<UserModel?> getUserById(String userId) async {
-    final raw = HiveService.usersBox.get(userId);
-    if (raw == null) return null;
+    final data = await _client
+        .from('profiles')
+        .select()
+        .eq('id', userId)
+        .maybeSingle();
 
-    return UserModel.fromMap(Map<String, dynamic>.from(raw as Map));
+    if (data == null) return null;
+
+    return UserModel(
+      id: data['id'] as String,
+      fullName: data['full_name'] as String,
+      email: data['email'] as String,
+      password: '',
+      createdAt: DateTime.parse(data['created_at'] as String),
+    );
   }
 
   Future<UserModel> updateUserName({
     required String userId,
     required String newName,
   }) async {
-    final current = await getUserById(userId);
-    if (current == null) {
+    await _client
+        .from('profiles')
+        .update({'full_name': newName.trim()})
+        .eq('id', userId);
+
+    final updated = await getUserById(userId);
+    if (updated == null) {
       throw Exception('Usuario no encontrado');
     }
 
-    final updated = UserModel(
-      id: current.id,
-      fullName: newName.trim(),
-      email: current.email,
-      password: current.password,
-      createdAt: current.createdAt,
-    );
-
-    await HiveService.usersBox.put(updated.id, updated.toMap());
     return updated;
   }
 }

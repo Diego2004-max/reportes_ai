@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../app/theme/app_colors.dart';
 
-/// Accessible text field with optional icons, obscure-text toggle,
-/// and full validation-error state display.
-/// Use this instead of raw [TextField] / [TextFormField] everywhere.
 class CustomTextField extends StatefulWidget {
   const CustomTextField({
     super.key,
@@ -71,10 +67,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       maxLines: _obscure ? 1 : widget.maxLines,
       enabled: widget.enabled,
       autofillHints: widget.autofillHints,
-      style: theme.textTheme.bodyLarge?.copyWith(
-        color: AppColors.textPrimary,
-        fontSize: 16,
-      ),
+      style: theme.textTheme.bodyLarge,
       onChanged: widget.onChanged,
       onFieldSubmitted: widget.onFieldSubmitted,
       validator: widget.validator,
@@ -82,12 +75,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
       decoration: InputDecoration(
         labelText: widget.label,
         hintText: widget.hint,
-        hintStyle: theme.textTheme.bodyMedium?.copyWith(
-          color: AppColors.textDisabled,
-        ),
-        labelStyle: theme.textTheme.bodyMedium?.copyWith(
-          color: AppColors.textSecondary,
-        ),
         prefixIcon: widget.prefixIcon != null
             ? Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -103,8 +90,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   _obscure
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  color: AppColors.textSecondary,
-                  size: 22,
                 ),
                 splashRadius: 20,
               )

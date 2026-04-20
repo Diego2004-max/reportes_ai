@@ -18,13 +18,16 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
   void _onTabSelected(int index) {
+    if (_currentIndex == index) return;
+
     setState(() {
       _currentIndex = index;
     });
   }
 
-  void _onCreateReportTap() {
-    Navigator.of(context).push(
+  Future<void> _onCreateReportTap() async {
+    await Navigator.push(
+      context,
       MaterialPageRoute(
         builder: (_) => const CreateReportScreen(),
       ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
+import 'package:reportes_ai/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:reportes_ai/features/reports/presentation/screens/report_detail_screen.dart';
 import 'package:reportes_ai/shared/widgets/app_card.dart';
 import 'package:reportes_ai/shared/widgets/custom_app_bar.dart';
@@ -19,36 +19,21 @@ class HomeScreen extends ConsumerWidget {
     final session = ref.watch(sessionProvider);
     final statsAsync = ref.watch(userReportStatsProvider);
     final recentAsync = ref.watch(recentUserReportsProvider(3));
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: CustomAppBar(
         title: 'Reportes AI',
         subtitle: 'Panel personal',
         actions: [
           IconButton(
             onPressed: () {
-              showModalBottomSheet<void>(
-                context: context,
-                builder: (sheetContext) {
-                  return const Padding(
-                    padding: EdgeInsets.all(AppSpacing.xl),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Notificaciones',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        SizedBox(height: AppSpacing.md),
-                        Text('No tienes notificaciones nuevas por ahora.'),
-                      ],
-                    ),
-                  );
-                },
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const NotificationsScreen(),
+                ),
               );
             },
             icon: const Icon(Icons.notifications_outlined),
@@ -57,20 +42,19 @@ class HomeScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(userReportsProvider);
-          ref.invalidate(userReportStatsProvider);
+          refreshReports(ref);
         },
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.screenH),
           children: [
             Text(
               'Hola, ${session.userName ?? 'Usuario'}',
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: theme.textTheme.headlineMedium,
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               'Aquí está el resumen de tu actividad',
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: AppSpacing.xxl),
             statsAsync.when(
@@ -83,7 +67,7 @@ class HomeScreen extends ConsumerWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   mainAxisSpacing: AppSpacing.md,
                   crossAxisSpacing: AppSpacing.md,
-                  childAspectRatio: 1.4,
+                  childAspectRatio: 1.18,
                   children: [
                     StatCard(
                       label: 'Total',
@@ -110,14 +94,9 @@ class HomeScreen extends ConsumerWidget {
               },
             ),
             const SizedBox(height: AppSpacing.xxl),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Tus reportes recientes',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ],
+            Text(
+              'Tus reportes recientes',
+              style: theme.textTheme.titleLarge,
             ),
             const SizedBox(height: AppSpacing.md),
             recentAsync.when(
@@ -135,21 +114,24 @@ class HomeScreen extends ConsumerWidget {
 
                 return Column(
                   children: reports.map((report) {
-                    return ReportCard(
-                      title: report.title,
-                      description: report.description,
-                      status: report.status,
-                      date:
-                          '${report.createdAt.day}/${report.createdAt.month}/${report.createdAt.year}',
-                      category: report.category,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ReportDetailScreen(report: report),
-                          ),
-                        );
-                      },
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: ReportCard(
+                        title: report.title,
+                        description: report.description,
+                        status: report.status,
+                        date:
+                            '${report.createdAt.day}/${report.createdAt.month}/${report.createdAt.year}',
+                        category: report.category,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ReportDetailScreen(report: report),
+                            ),
+                          );
+                        },
+                      ),
                     );
                   }).toList(),
                 );

@@ -15,23 +15,39 @@ class AppBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final scheme = theme.colorScheme;
+
     return SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         child: Material(
-          color: Colors.white,
-          elevation: 10,
-          shadowColor: Colors.black12,
-          borderRadius: BorderRadius.circular(28),
-          child: SizedBox(
+          color: Colors.transparent,
+          child: Container(
             height: 84,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: isDark ? theme.cardColor : Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: isDark ? const Color(0xFF26364D) : AppColors.border,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(isDark ? 22 : 14),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
             child: Row(
               children: [
                 Expanded(
                   child: _NavItem(
                     icon: Icons.home_outlined,
-                    activeIcon: Icons.home,
+                    activeIcon: Icons.home_rounded,
                     label: 'Inicio',
                     selected: currentIndex == 0,
                     onTap: () => onTabSelected(0),
@@ -40,26 +56,27 @@ class AppBottomNavBar extends StatelessWidget {
                 Expanded(
                   child: _NavItem(
                     icon: Icons.map_outlined,
-                    activeIcon: Icons.map,
+                    activeIcon: Icons.map_rounded,
                     label: 'Mapa',
                     selected: currentIndex == 1,
                     onTap: () => onTabSelected(1),
                   ),
                 ),
-                Expanded(
+                SizedBox(
+                  width: 72,
                   child: Center(
                     child: GestureDetector(
                       onTap: onCreateTap,
                       child: Container(
                         width: 56,
                         height: 56,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
+                        decoration: BoxDecoration(
+                          color: scheme.primary,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
-                          Icons.add,
-                          color: Colors.white,
+                        child: Icon(
+                          Icons.add_rounded,
+                          color: scheme.onPrimary,
                           size: 30,
                         ),
                       ),
@@ -69,7 +86,7 @@ class AppBottomNavBar extends StatelessWidget {
                 Expanded(
                   child: _NavItem(
                     icon: Icons.article_outlined,
-                    activeIcon: Icons.article,
+                    activeIcon: Icons.article_rounded,
                     label: 'Reportes',
                     selected: currentIndex == 2,
                     onTap: () => onTabSelected(2),
@@ -77,8 +94,8 @@ class AppBottomNavBar extends StatelessWidget {
                 ),
                 Expanded(
                   child: _NavItem(
-                    icon: Icons.person_outline,
-                    activeIcon: Icons.person,
+                    icon: Icons.person_outline_rounded,
+                    activeIcon: Icons.person_rounded,
                     label: 'Perfil',
                     selected: currentIndex == 3,
                     onTap: () => onTabSelected(3),
@@ -110,14 +127,21 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.primary : AppColors.textSecondary;
+    final theme = Theme.of(context);
+
+    final color = selected
+        ? theme.colorScheme.primary
+        : theme.brightness == Brightness.dark
+            ? const Color(0xFFB7C3D4)
+            : AppColors.textSecondary;
 
     return InkWell(
       borderRadius: BorderRadius.circular(18),
       onTap: onTap,
-      child: Center(
+      child: SizedBox(
+        height: double.infinity,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               selected ? activeIcon : icon,

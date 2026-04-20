@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../app/theme/app_colors.dart';
-import '../../app/theme/app_spacing.dart' show AppSpacing;
+import 'package:reportes_ai/app/theme/app_colors.dart';
+import 'package:reportes_ai/app/theme/app_spacing.dart';
 
-/// Custom app bar used on every screen.
-/// Implements [PreferredSizeWidget] so it plugs into [Scaffold.appBar].
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({
     super.key,
@@ -39,15 +37,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fg = foregroundColor ?? AppColors.textPrimary;
-    final bg = backgroundColor ?? AppColors.surface;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final fg =
+        foregroundColor ?? theme.appBarTheme.foregroundColor ?? theme.colorScheme.onSurface;
+    final bg =
+        backgroundColor ?? theme.appBarTheme.backgroundColor ?? theme.scaffoldBackgroundColor;
 
     return AppBar(
       backgroundColor: bg,
       foregroundColor: fg,
-      elevation: elevation ?? AppSpacing.elevationNone,
-      scrolledUnderElevation: AppSpacing.elevationSm,
-      shadowColor: AppColors.shadow,
+      elevation: elevation ?? 0,
+      scrolledUnderElevation: 0,
+      shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       centerTitle: centerTitle,
       leading: showBack
@@ -56,8 +59,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               icon: Container(
                 padding: const EdgeInsets.all(AppSpacing.xs),
                 decoration: BoxDecoration(
-                  color: AppColors.background,
+                  color: isDark ? const Color(0xFF1B2940) : Colors.white,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF26364D) : AppColors.border,
+                  ),
                 ),
                 child: Icon(
                   Icons.arrow_back_ios_new_rounded,
@@ -73,28 +79,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 18,
+                  style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: fg,
                   ),
                 ),
                 Text(
                   subtitle!,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.textSecondary,
-                  ),
+                  style: theme.textTheme.bodySmall,
                 ),
               ],
             )
           : Text(
               title,
-              style: TextStyle(
-                fontSize: 18,
+              style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
-                color: fg,
               ),
             ),
       actions: actions != null
