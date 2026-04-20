@@ -28,6 +28,8 @@ class ReportRepositoryImpl {
         ? _buildFallbackTitle(cleanDescription)
         : title.trim();
 
+    final expiresAt = DateTime.now().add(const Duration(days: 10));
+
     final inserted = await _client
         .from('reports')
         .insert({
@@ -41,6 +43,7 @@ class ReportRepositoryImpl {
           'longitude': longitude,
           'image_url': imagePaths.isNotEmpty ? imagePaths.first : null,
           'audio_url': audioPath,
+          'expires_at': expiresAt.toIso8601String(),
         })
         .select()
         .single();
@@ -86,10 +89,14 @@ class ReportRepositoryImpl {
       category: row['category'] as String,
       status: row['status'] as String,
       createdAt: DateTime.parse(row['created_at'] as String),
+      expiresAt: row['expires_at'] != null
+          ? DateTime.parse(row['expires_at'] as String)
+          : null,
       locationLabel: row['location_label'] as String?,
       latitude: (row['latitude'] as num?)?.toDouble(),
       longitude: (row['longitude'] as num?)?.toDouble(),
-      imagePaths: imageUrl != null && imageUrl.isNotEmpty ? [imageUrl] : const [],
+      imagePaths:
+          imageUrl != null && imageUrl.isNotEmpty ? [imageUrl] : const [],
       audioPath: row['audio_url'] as String?,
     );
   }
@@ -101,7 +108,8 @@ class ReportRepositoryImpl {
       return 'Reporte ciudadano';
     }
 
-    final words = clean.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
+    final words =
+        clean.split(RegExp(r'\s+')).where((e) => e.isNotEmpty).toList();
     final short = words.take(5).join(' ');
 
     if (short.isEmpty) {
