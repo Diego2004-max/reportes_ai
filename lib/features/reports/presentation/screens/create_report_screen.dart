@@ -1,16 +1,28 @@
 import 'package:flutter/material.dart';
 
 import 'package:reportes_ai/app/theme/app_spacing.dart';
+import 'package:reportes_ai/features/reports/presentation/screens/create_audio_report_screen.dart';
+import 'package:reportes_ai/features/reports/presentation/screens/create_written_report_screen.dart';
 import 'package:reportes_ai/shared/widgets/app_card.dart';
 import 'package:reportes_ai/shared/widgets/custom_app_bar.dart';
 
 class CreateReportScreen extends StatelessWidget {
   const CreateReportScreen({super.key});
 
-  void _showPendingFlow(BuildContext context, String flowName) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$flowName será la siguiente pantalla que vamos a crear.'),
+  void _openWritten(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const CreateWrittenReportScreen(),
+      ),
+    );
+  }
+
+  void _openAudio(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const CreateAudioReportScreen(),
       ),
     );
   }
@@ -40,12 +52,12 @@ class CreateReportScreen extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Elige el tipo de reporte que quieres enviar. Luego armamos cada flujo por separado para que quede más claro y profesional.',
+                'Elige el tipo de reporte que deseas enviar.',
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: AppSpacing.xl),
               AppCard(
-                onTap: () => _showPendingFlow(context, 'Reporte escrito'),
+                onTap: () => _openWritten(context),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -71,23 +83,18 @@ class CreateReportScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      'Para usuarios que quieren escribir el incidente manualmente.',
+                      'Ideal para quien quiere escribir manualmente el incidente.',
                       style: theme.textTheme.bodyMedium,
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        _FlowPoint(text: 'Título obligatorio'),
-                        _FlowPoint(text: 'Categoría obligatoria'),
-                        _FlowPoint(text: 'Descripción obligatoria'),
-                        _FlowPoint(text: 'Ubicación obligatoria'),
-                        _FlowPoint(text: 'Imagen opcional'),
-                      ],
-                    ),
+                    const _FlowPoint(text: 'Título obligatorio'),
+                    const _FlowPoint(text: 'Categoría obligatoria'),
+                    const _FlowPoint(text: 'Descripción obligatoria'),
+                    const _FlowPoint(text: 'Ubicación obligatoria'),
+                    const _FlowPoint(text: 'Imagen opcional'),
                     const SizedBox(height: AppSpacing.lg),
                     FilledButton.icon(
-                      onPressed: () => _showPendingFlow(context, 'Reporte escrito'),
+                      onPressed: () => _openWritten(context),
                       icon: const Icon(Icons.arrow_forward_rounded),
                       label: const Text('Continuar con reporte escrito'),
                     ),
@@ -96,7 +103,7 @@ class CreateReportScreen extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.lg),
               AppCard(
-                onTap: () => _showPendingFlow(context, 'Reporte por audio'),
+                onTap: () => _openAudio(context),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -122,41 +129,19 @@ class CreateReportScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      'Para usuarios que prefieren enviar evidencia hablada y luego enriquecerla con IA.',
+                      'Ideal para quien quiere enviar evidencia hablada.',
                       style: theme.textTheme.bodyMedium,
                     ),
                     const SizedBox(height: AppSpacing.md),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        _FlowPoint(text: 'Título obligatorio'),
-                        _FlowPoint(text: 'Categoría obligatoria'),
-                        _FlowPoint(text: 'Audio obligatorio'),
-                        _FlowPoint(text: 'Ubicación obligatoria'),
-                        _FlowPoint(text: 'Imagen opcional'),
-                        _FlowPoint(text: 'Descripción opcional por ahora'),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(AppSpacing.md),
-                      decoration: BoxDecoration(
-                        color: theme.cardColor,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusMd),
-                        border: Border.all(color: theme.dividerColor),
-                      ),
-                      child: Text(
-                        'Luego aquí metemos transcripción, OCR y clasificación automática.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+                    const _FlowPoint(text: 'Título obligatorio'),
+                    const _FlowPoint(text: 'Categoría obligatoria'),
+                    const _FlowPoint(text: 'Audio obligatorio'),
+                    const _FlowPoint(text: 'Ubicación obligatoria'),
+                    const _FlowPoint(text: 'Imagen opcional'),
+                    const _FlowPoint(text: 'Descripción opcional'),
                     const SizedBox(height: AppSpacing.lg),
                     FilledButton.icon(
-                      onPressed: () => _showPendingFlow(context, 'Reporte por audio'),
+                      onPressed: () => _openAudio(context),
                       icon: const Icon(Icons.arrow_forward_rounded),
                       label: const Text('Continuar con reporte por audio'),
                     ),
@@ -190,9 +175,7 @@ class _FlowPoint extends StatelessWidget {
             child: Icon(Icons.circle, size: 8),
           ),
           const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(text),
-          ),
+          Expanded(child: Text(text)),
         ],
       ),
     );
