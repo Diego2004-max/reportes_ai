@@ -31,15 +31,17 @@ class _ReportListScreenState extends ConsumerState<ReportListScreen> {
     'Atendido',
   ];
 
-    List<ReportModel> _applyFilters(List<ReportModel> reports) {
+  List<ReportModel> _applyFilters(List<ReportModel> reports) {
     return reports.where((report) {
       final matchesFilter =
           _selectedFilter == 'Todos' || report.status == _selectedFilter;
 
-      final query = _searchQuery.toLowerCase();
+      final query = _searchQuery.toLowerCase().trim();
       final matchesSearch = query.isEmpty ||
           report.title.toLowerCase().contains(query) ||
-          report.category.toLowerCase().contains(query);
+          report.category.toLowerCase().contains(query) ||
+          report.description.toLowerCase().contains(query) ||
+          (report.locationLabel?.toLowerCase().contains(query) ?? false);
 
       return matchesFilter && matchesSearch;
     }).toList();
@@ -53,13 +55,13 @@ class _ReportListScreenState extends ConsumerState<ReportListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final reportsAsync = ref.watch(userReportsProvider);
+    final reportsAsync = ref.watch(allReportsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const CustomAppBar(
-        title: 'Mis reportes',
-        subtitle: 'Historial personal',
+        title: 'Reportes',
+        subtitle: 'Vista global de la comunidad',
       ),
       body: Column(
         children: [
@@ -105,7 +107,7 @@ class _ReportListScreenState extends ConsumerState<ReportListScreen> {
                       return FilterChip(
                         label: Text(filter),
                         selected: selected,
-                        onSelected: (value) {
+                        onSelected: (_) {
                           setState(() => _selectedFilter = filter);
                         },
                       );
@@ -134,11 +136,11 @@ class _ReportListScreenState extends ConsumerState<ReportListScreen> {
                 final filteredReports = _applyFilters(reports);
 
                 if (filteredReports.isEmpty) {
-                  return EmptyStateWidget(
+                  return const EmptyStateWidget(
                     icon: Icons.article_outlined,
-                    title: 'Aún no tienes reportes',
+                    title: 'No hay reportes todavía',
                     subtitle:
-                        'Cuando crees tu primer reporte, aparecerá aquí.',
+                        'Cuando cualquier usuario cree un reporte, aparecerá aquí.',
                   );
                 }
 
@@ -146,9 +148,11 @@ class _ReportListScreenState extends ConsumerState<ReportListScreen> {
                   onRefresh: () async {
                     refreshReports(ref);
                   },
-                  child: ListView.builder(
+                  child: ListView.separated(
                     padding: const EdgeInsets.all(AppSpacing.screenH),
                     itemCount: filteredReports.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: AppSpacing.md),
                     itemBuilder: (context, index) {
                       final report = filteredReports[index];
 
