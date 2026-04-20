@@ -83,7 +83,7 @@ class CreateReportScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      'Ideal para quien quiere escribir manualmente el incidente.',
+                      'Opcion para escribir manualmente el incidente.',
                       style: theme.textTheme.bodyMedium,
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -129,7 +129,7 @@ class CreateReportScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      'Ideal para quien quiere enviar evidencia hablada.',
+                      'Opción para enviar evidencia por audio.',
                       style: theme.textTheme.bodyMedium,
                     ),
                     const SizedBox(height: AppSpacing.md),
