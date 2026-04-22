@@ -5,14 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:reportes_ai/app/theme/app_spacing.dart';
+import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/core/services/location_service.dart';
 import 'package:reportes_ai/core/services/voice_service.dart';
-import 'package:reportes_ai/shared/widgets/custom_app_bar.dart';
-import 'package:reportes_ai/shared/widgets/custom_textfield.dart';
-import 'package:reportes_ai/shared/widgets/primary_button.dart';
+import 'package:reportes_ai/core/services/speech_service.dart';
 import 'package:reportes_ai/state/report_provider.dart';
 import 'package:reportes_ai/state/session_provider.dart';
+import 'package:reportes_ai/shared/widgets/vial_card.dart';
+import 'package:reportes_ai/shared/widgets/vial_button.dart';
+import 'package:reportes_ai/shared/widgets/vial_text_field.dart';
 
 class CreateAudioReportScreen extends ConsumerStatefulWidget {
   const CreateAudioReportScreen({super.key});
@@ -22,39 +23,37 @@ class CreateAudioReportScreen extends ConsumerStatefulWidget {
       _CreateAudioReportScreenState();
 }
 
-class _CreateAudioReportScreenState
-    extends ConsumerState<CreateAudioReportScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
+class _CreateAudioReportScreenState extends ConsumerState<CreateAudioReportScreen> {
   final _descriptionController = TextEditingController();
 
   final LocationService _locationService = LocationService();
   final VoiceService _voiceService = VoiceService();
+  final SpeechService _speechService = SpeechService();
   final ImagePicker _imagePicker = ImagePicker();
 
   bool _isLoading = false;
   bool _isGettingLocation = false;
   bool _isPickingImage = false;
   bool _isRecording = false;
+  String _transcription = '';
 
-  String _selectedCategory = 'Infraestructura';
+  String _selectedCategory = 'Accidente';
+  String _selectedSeverity = 'Moderado';
 
   Position? _currentPosition;
   String? _locationLabel;
 
   String? _imagePath;
   Uint8List? _imageBytes;
-
+  
   String? _audioPath;
 
-  final List<String> _categories = const [
-    'Infraestructura',
-    'Accidente de tránsito',
-    'Seguridad',
-    'Emergencia climática',
-    'Servicios públicos',
-    'Otro',
-  ];
+  final Map<String, IconData> _categories = {
+    'Accidente': Icons.car_crash_rounded,
+    'Derrumbe': Icons.landscape_rounded,
+    'Semáforo dañado': Icons.traffic_rounded,
+    'Vía bloqueada': Icons.block_rounded,
+  };
 
   @override
   void initState() {
@@ -64,24 +63,21 @@ class _CreateAudioReportScreenState
 
   @override
   void dispose() {
-    _titleController.dispose();
     _descriptionController.dispose();
     _voiceService.dispose();
+    _speechService.cancelListening();
     super.dispose();
   }
 
   Future<void> _loadCurrentLocation() async {
     setState(() => _isGettingLocation = true);
-
     try {
       final position = await _locationService.getCurrentLocation();
       final address = await _locationService.getReadableAddress(
         latitude: position.latitude,
         longitude: position.longitude,
       );
-
       if (!mounted) return;
-
       setState(() {
         _currentPosition = position;
         _locationLabel = address ??
@@ -89,200 +85,97 @@ class _CreateAudioReportScreenState
       });
     } catch (e) {
       if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo obtener ubicación: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No se pudo obtener ubicación: $e')));
     } finally {
-      if (mounted) {
-        setState(() => _isGettingLocation = false);
-      }
+      if (mounted) setState(() => _isGettingLocation = false);
     }
-  }
-
-  bool get _showSecondaryCoordinates {
-    if (_currentPosition == null) return false;
-    if (_locationLabel == null) return true;
-    return !_locationLabel!.startsWith('Lat ');
   }
 
   Future<void> _startRecording() async {
     try {
       await _voiceService.startRecording();
-
-      if (!mounted) return;
-
       setState(() {
         _isRecording = true;
         _audioPath = null;
+        _transcription = '';
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Grabación iniciada')),
-      );
+      // Speech-to-text runs in parallel to transcribe while recording
+      _speechService.startListening(
+        onResult: (text, isFinal) {
+          if (!mounted) return;
+          setState(() => _transcription = text);
+          if (isFinal && text.isNotEmpty && _descriptionController.text.isEmpty) {
+            _descriptionController.text = text;
+          }
+        },
+      ).catchError((_) {}); // speech may be unavailable on some devices
     } catch (e) {
       if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo grabar el audio: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No se pudo grabar el audio: $e')));
     }
   }
 
   Future<void> _stopRecording() async {
     try {
       final path = await _voiceService.stopRecording();
-
+      await _speechService.stopListening();
       if (!mounted) return;
-
       setState(() {
         _isRecording = false;
         _audioPath = path;
+        if (_transcription.isNotEmpty && _descriptionController.text.isEmpty) {
+          _descriptionController.text = _transcription;
+        }
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Audio grabado correctamente')),
-      );
     } catch (e) {
       if (!mounted) return;
-
       setState(() => _isRecording = false);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo detener la grabación: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No se pudo detener la grabación: $e')));
     }
   }
 
   Future<void> _deleteAudio() async {
     if (_isRecording) {
       await _voiceService.cancelRecording();
+      await _speechService.cancelListening();
     }
-
     if (!mounted) return;
-
     setState(() {
       _isRecording = false;
       _audioPath = null;
+      _transcription = '';
     });
   }
 
-  Future<void> _pickImage(ImageSource source) async {
-    try {
-      setState(() => _isPickingImage = true);
-
-      final file = await _imagePicker.pickImage(
-        source: source,
-        imageQuality: 75,
-        maxWidth: 1600,
-      );
-
-      if (file == null) {
-        if (mounted) setState(() => _isPickingImage = false);
-        return;
-      }
-
-      final bytes = await file.readAsBytes();
-
-      if (!mounted) return;
-
-      setState(() {
-        _imagePath = file.path;
-        _imageBytes = bytes;
-        _isPickingImage = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Imagen adjunta correctamente')),
-      );
-    } catch (e) {
-      if (!mounted) return;
-
-      setState(() => _isPickingImage = false);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo cargar la imagen: $e')),
-      );
-    }
-  }
-
-  Future<void> _showImageSourceSheet() async {
-    await showModalBottomSheet<void>(
-      context: context,
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.photo_library_outlined),
-                  title: const Text('Seleccionar de galería'),
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    _pickImage(ImageSource.gallery);
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.photo_camera_outlined),
-                  title: const Text('Tomar foto'),
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    _pickImage(ImageSource.camera);
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   Future<void> _submitReport() async {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-
     final session = ref.read(sessionProvider);
-    final userId = session.userId;
-
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debes iniciar sesión')),
-      );
+    if (session.userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Debes iniciar sesión')));
       return;
     }
-
     if (_currentPosition == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debes capturar la ubicación del reporte')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Debes capturar ubicación')));
       return;
     }
-
     if (_isRecording) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Detén la grabación antes de enviar')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Detén la grabación antes de enviar')));
       return;
     }
-
     if (_audioPath == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debes grabar un audio')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Debes grabar un audio obligatoriamente')));
       return;
     }
 
     setState(() => _isLoading = true);
-
     try {
+      final generatedTitle = '$_selectedCategory - $_selectedSeverity - Audio';
+      
       await ref.read(reportRepositoryProvider).createReport(
-            userId: userId,
-            title: _titleController.text.trim(),
-            description: _descriptionController.text.trim().isEmpty
-                ? 'Reporte enviado por audio'
-                : _descriptionController.text.trim(),
+            userId: session.userId!,
+            title: generatedTitle,
+            description: _descriptionController.text.trim().isEmpty 
+                 ? 'Reporte enviado por audio' 
+                 : _descriptionController.text.trim(),
             category: _selectedCategory,
             locationLabel: _locationLabel,
             latitude: _currentPosition?.latitude,
@@ -292,13 +185,8 @@ class _CreateAudioReportScreenState
           );
 
       refreshReports(ref);
-
       if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Reporte por audio enviado correctamente')),
-      );
-
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reporte de audio enviado')));
       Navigator.pop(context);
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -307,279 +195,227 @@ class _CreateAudioReportScreenState
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: const CustomAppBar(
-        title: 'Reporte por audio',
-        showBack: true,
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLowest.withAlpha(200),
+            border: Border(bottom: BorderSide(color: AppColors.surfaceContainerHighest)),
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.primary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Nuevo reporte por IA',
+          style: TextStyle(
+            color: AppColors.primary,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
+          ),
+        ),
+        centerTitle: true,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.screenH),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Nuevo reporte por audio',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 1. Map Preview Card
+              VialCard(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Container(
+                      height: 120,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(12),
+                        image: const DecorationImage(
+                          image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuBRLPziqvS-V0M__jJtPlk4A9i4IIO0CJK2o-LSbppCLO-KBvBWiQfEgPsk4tF1O9jg4UBA5rLFg0u283CsalSFUxP8MP8Y4w8hjtOV2qX_StEBn5QGgVK5hKAmTRKr7pDp4cql3cibZaJxNuZBIH5QD_MQKV9CBvWKbJGogUYtflv00oD1yAiGDGeF5Ztc3_VHERaBGr6eMN-9CGHASm08cRiLp51c19fdEHAaDKaqT_ncxaCiPD3MEkuipkeszpMWdALNbo767H4'),
+                          fit: BoxFit.cover, opacity: 0.8,
+                        ),
+                      ),
+                      child: Center(
+                        child: Container(
+                          width: 48, height: 48,
+                          decoration: BoxDecoration(color: AppColors.primary.withAlpha(50), shape: BoxShape.circle),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: AppColors.surfaceContainerLow, borderRadius: BorderRadius.circular(12)),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 32, height: 32,
+                            decoration: BoxDecoration(color: AppColors.primaryContainer.withAlpha(50), shape: BoxShape.circle),
+                            child: const Icon(Icons.location_on_rounded, color: AppColors.primary, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('UBICACIÓN ACTUAL', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary, letterSpacing: 1.0)),
+                                _isGettingLocation
+                                    ? const SizedBox(height: 14, width: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                                    : Text(_locationLabel ?? 'Buscando...', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary), maxLines: 1),
+                              ],
+                            ),
+                          ),
+                          TextButton(onPressed: _isGettingLocation ? null : _loadCurrentLocation, child: const Text('Actualizar')),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  'Graba el incidente con tu voz. Más adelante aquí metemos IA para transcripción, OCR y clasificación.',
-                  style: theme.textTheme.bodyMedium,
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                CustomTextField(
-                  label: 'Título',
-                  controller: _titleController,
-                  hint: 'Ej. Camión carga pesada bloqueando la vía',
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'El título es obligatorio';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Text('Categoría', style: theme.textTheme.titleMedium),
-                const SizedBox(height: AppSpacing.sm),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: theme.cardTheme.color ?? theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: theme.dividerColor),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _selectedCategory,
-                      isExpanded: true,
-                      items: _categories.map((category) {
-                        return DropdownMenuItem(
-                          value: category,
-                          child: Text(category),
+              ),
+              const SizedBox(height: 24),
+
+               // 2. Type Selector
+              VialCard(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Categoría inicial', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: _categories.entries.map((entry) {
+                        final isSelected = _selectedCategory == entry.key;
+                        return InkWell(
+                          onTap: () => setState(() => _selectedCategory = entry.key),
+                          borderRadius: BorderRadius.circular(24),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppColors.primary : AppColors.surfaceContainerLow,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: isSelected ? [BoxShadow(color: AppColors.primary.withAlpha(50), blurRadius: 10, offset: const Offset(0, 2))] : [],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(entry.value, size: 18, color: isSelected ? AppColors.onPrimary : AppColors.textSecondary),
+                                const SizedBox(width: 8),
+                                Text(entry.key, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: isSelected ? AppColors.onPrimary : AppColors.textSecondary)),
+                              ],
+                            ),
+                          ),
                         );
                       }).toList(),
-                      onChanged: (value) {
-                        if (value == null) return;
-                        setState(() => _selectedCategory = value);
-                      },
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                CustomTextField(
-                  label: 'Descripción adicional',
-                  controller: _descriptionController,
-                  hint: 'Opcional por ahora',
-                  maxLines: 4,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  decoration: BoxDecoration(
-                    color: theme.cardTheme.color ?? theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                    border: Border.all(color: theme.dividerColor),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Audio del reporte',
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        _isRecording
-                            ? 'Grabando audio...'
-                            : _audioPath == null
-                                ? 'Debes grabar un audio como evidencia'
-                                : 'Audio grabado correctamente',
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      Wrap(
-                        spacing: AppSpacing.md,
-                        runSpacing: AppSpacing.md,
-                        children: [
-                          if (!_isRecording)
-                            FilledButton.icon(
-                              onPressed: _startRecording,
-                              icon: const Icon(Icons.mic_rounded),
-                              label: Text(
-                                _audioPath == null
-                                    ? 'Grabar audio'
-                                    : 'Volver a grabar',
-                              ),
-                            ),
-                          if (_isRecording)
-                            FilledButton.icon(
-                              onPressed: _stopRecording,
-                              icon: const Icon(Icons.stop_rounded),
-                              label: const Text('Detener grabación'),
-                            ),
-                          if (_audioPath != null || _isRecording)
-                            OutlinedButton.icon(
-                              onPressed: _deleteAudio,
-                              icon: const Icon(Icons.delete_outline),
-                              label: const Text('Quitar audio'),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  decoration: BoxDecoration(
-                    color: theme.cardTheme.color ?? theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                    border: Border.all(color: theme.dividerColor),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Ubicación del reporte',
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      if (_isGettingLocation)
-                        const Row(
-                          children: [
-                            SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                            SizedBox(width: AppSpacing.sm),
-                            Text('Obteniendo ubicación actual...'),
-                          ],
-                        )
-                      else
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _locationLabel ?? 'Sin ubicación capturada',
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                            if (_showSecondaryCoordinates)
-                              Padding(
-                                padding:
-                                    const EdgeInsets.only(top: AppSpacing.xs),
-                                child: Text(
-                                  'Lat ${_currentPosition!.latitude.toStringAsFixed(5)}, Lng ${_currentPosition!.longitude.toStringAsFixed(5)}',
-                                  style: theme.textTheme.bodySmall,
-                                ),
-                              ),
-                          ],
+              ),
+              const SizedBox(height: 24),
+
+              // 3. Microphone specific Area
+              VialCard(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    const Text('Habla con el asistente de emergencia VialAI', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 24),
+                    GestureDetector(
+                      onTap: _isRecording ? _stopRecording : _startRecording,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: _isRecording ? 100 : 80,
+                        height: _isRecording ? 100 : 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _isRecording ? AppColors.error : AppColors.primaryContainer.withAlpha(50),
+                          boxShadow: _isRecording ? [BoxShadow(color: AppColors.error.withAlpha(100), blurRadius: 20, spreadRadius: 10)] : [],
                         ),
-                      const SizedBox(height: AppSpacing.md),
-                      OutlinedButton.icon(
-                        onPressed:
-                            _isGettingLocation ? null : _loadCurrentLocation,
-                        icon: const Icon(Icons.my_location_rounded),
-                        label: const Text('Actualizar ubicación'),
+                        child: Icon(
+                          _isRecording ? Icons.stop_rounded : Icons.mic_rounded,
+                          size: 40,
+                          color: _isRecording ? Colors.white : AppColors.primary,
+                        ),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  decoration: BoxDecoration(
-                    color: theme.cardTheme.color ?? theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                    border: Border.all(color: theme.dividerColor),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Imagen como evidencia',
-                        style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _isRecording ? 'Grabando narración...' : (_audioPath != null ? 'Audio capturado.' : 'Presiona para grabar detalles por voz'),
+                      style: TextStyle(
+                        color: _isRecording ? AppColors.error : AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
                       ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text(
-                        _imagePath == null
-                            ? 'Opcional: adjunta una foto del incidente'
-                            : 'Imagen adjunta correctamente',
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                      if (_imageBytes != null) ...[
-                        const SizedBox(height: AppSpacing.md),
-                        ClipRRect(
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusMd),
-                          child: Image.memory(
-                            _imageBytes!,
-                            height: 180,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
+                    ),
+                    if (_isRecording && _transcription.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            _transcription,
+                            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, fontStyle: FontStyle.italic),
+                            textAlign: TextAlign.center,
                           ),
                         ),
-                      ],
-                      const SizedBox(height: AppSpacing.md),
-                      Wrap(
-                        spacing: AppSpacing.md,
-                        runSpacing: AppSpacing.md,
-                        children: [
-                          FilledButton.icon(
-                            onPressed:
-                                _isPickingImage ? null : _showImageSourceSheet,
-                            icon: _isPickingImage
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Icon(Icons.add_a_photo_outlined),
-                            label: Text(
-                              _imagePath == null
-                                  ? 'Subir imagen'
-                                  : 'Cambiar imagen',
-                            ),
-                          ),
-                          if (_imagePath != null)
-                            OutlinedButton.icon(
-                              onPressed: () {
-                                setState(() {
-                                  _imagePath = null;
-                                  _imageBytes = null;
-                                });
-                              },
-                              icon: const Icon(Icons.delete_outline),
-                              label: const Text('Quitar imagen'),
-                            ),
-                        ],
                       ),
-                    ],
-                  ),
+                    if (_audioPath != null && !_isRecording)
+                       TextButton(onPressed: _deleteAudio, child: const Text('Eliminar y rehacer', style: TextStyle(color: AppColors.error))),
+                  ],
                 ),
-                const SizedBox(height: AppSpacing.xl),
-                PrimaryButton(
-                  label: 'Enviar reporte por audio',
-                  onPressed: _submitReport,
-                  isLoading: _isLoading,
+              ),
+              const SizedBox(height: 24),
+
+              // 4. Description Input
+              VialCard(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Transcripción / Peticiones especiales (Opcional)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 16),
+                    Container(
+                      decoration: BoxDecoration(color: AppColors.surfaceContainerLow, borderRadius: BorderRadius.circular(12)),
+                      child: TextField(
+                        controller: _descriptionController,
+                        maxLines: 2,
+                        decoration: const InputDecoration(
+                          hintText: 'Se auto-llena al grabar, o escribe manualmente...',
+                          hintStyle: TextStyle(color: AppColors.outline, fontSize: 14),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.all(16),
+                        ),
+                        style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 32),
+
+              // Submit Button
+              VialButton(
+                onPressed: _submitReport,
+                text: 'Enviar reporte inteligente',
+                isLoading: _isLoading,
+                icon: const Icon(Icons.send_rounded, size: 20),
+              ),
+              const SizedBox(height: 40),
+            ],
           ),
         ),
       ),

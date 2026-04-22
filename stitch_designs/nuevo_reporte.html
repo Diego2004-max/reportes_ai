@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nuevo Reporte - VialAI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-error": "#ffffff",
+                      "on-surface": "#161c21",
+                      "error-container": "#ffdad6",
+                      "surface-variant": "#dde3ea",
+                      "surface-container-highest": "#dde3ea",
+                      "outline-variant": "#c0c7d3",
+                      "tertiary-container": "#008560",
+                      "on-tertiary-fixed-variant": "#00513a",
+                      "on-tertiary-fixed": "#002115",
+                      "on-primary": "#ffffff",
+                      "surface": "#f6faff",
+                      "tertiary-fixed": "#86f8c9",
+                      "on-background": "#161c21",
+                      "on-primary-fixed": "#001c38",
+                      "surface-tint": "#0060a8",
+                      "secondary-fixed": "#d3e4fe",
+                      "primary-container": "#1777c9",
+                      "on-secondary-fixed": "#0b1c30",
+                      "on-secondary-fixed-variant": "#38485d",
+                      "secondary-container": "#d0e1fb",
+                      "on-error-container": "#93000a",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "inverse-on-surface": "#ebf1f8",
+                      "primary-fixed-dim": "#a1c9ff",
+                      "primary": "#005ea4",
+                      "surface-container": "#e8eef5",
+                      "primary-fixed": "#d2e4ff",
+                      "secondary": "#505f76",
+                      "tertiary-fixed-dim": "#68dbae",
+                      "error": "#ba1a1a",
+                      "on-primary-fixed-variant": "#004880",
+                      "surface-bright": "#f6faff",
+                      "background": "#f6faff",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-high": "#e3e9f0",
+                      "surface-dim": "#d5dbe2",
+                      "outline": "#717783",
+                      "on-secondary-container": "#54647a",
+                      "on-tertiary-container": "#f5fff7",
+                      "surface-container-low": "#eef4fb",
+                      "on-surface-variant": "#414751",
+                      "secondary-fixed-dim": "#b7c8e1",
+                      "inverse-primary": "#a1c9ff",
+                      "on-primary-container": "#fdfcff",
+                      "tertiary": "#00694c",
+                      "inverse-surface": "#2b3136"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {},
+              "fontFamily": {
+                      "headline": ["Inter"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-24 md:pb-0">
+<!-- Top Navigation (Mobile) / TopAppBar (Desktop mapped) -->
+<header class="bg-[#F6FAFF]/80 dark:bg-slate-950/80 backdrop-blur-md text-[#005EA4] dark:text-blue-400 font-['Inter'] font-semibold tracking-tight fixed top-0 w-full z-50 bg-gradient-to-b from-[#E8EEF5] to-transparent h-px shadow-sm transition-all duration-300 ease-in-out md:hidden" style="height: auto; border:none; background-image:none;">
+<div class="flex justify-between items-center px-6 py-4 w-full h-full bg-[#F6FAFF]/80 backdrop-blur-md">
+<button class="text-primary hover:bg-slate-100/50 p-2 rounded-full transition-colors flex items-center">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold tracking-tighter text-[#005EA4] dark:text-blue-400">Nuevo reporte</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</div>
+<div class="bg-gradient-to-b from-[#E8EEF5] to-transparent h-px w-full"></div>
+</header>
+<!-- TopAppBar (Desktop) -->
+<header class="hidden md:flex bg-[#F6FAFF]/80 dark:bg-slate-950/80 backdrop-blur-md text-[#005EA4] dark:text-blue-400 font-['Inter'] font-semibold tracking-tight fixed top-0 w-full z-50 bg-gradient-to-b from-[#E8EEF5] to-transparent h-px shadow-sm transition-all duration-300 ease-in-out" style="height: auto; border:none; background-image:none;">
+<div class="flex justify-between items-center px-6 py-4 w-full h-full bg-[#F6FAFF]/80 backdrop-blur-md">
+<div class="flex items-center gap-4">
+<button class="text-primary hover:bg-slate-100/50 p-2 rounded-full transition-colors flex items-center">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<span class="text-xl font-bold tracking-tighter text-[#005EA4] dark:text-blue-400">VialAI</span>
+</div>
+<nav class="hidden md:flex gap-8">
+<a class="text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 px-3 py-2 rounded-lg transition-all duration-300 ease-in-out flex items-center gap-2" href="#">Inicio</a>
+<a class="text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 px-3 py-2 rounded-lg transition-all duration-300 ease-in-out flex items-center gap-2" href="#">Historial</a>
+<a class="text-[#005EA4] dark:text-blue-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 px-3 py-2 rounded-lg transition-all duration-300 ease-in-out flex items-center gap-2 font-bold" href="#">Reportar</a>
+<a class="text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 px-3 py-2 rounded-lg transition-all duration-300 ease-in-out flex items-center gap-2" href="#">Alertas</a>
+</nav>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden flex items-center justify-center text-primary font-bold">
+<span class="material-symbols-outlined">person</span>
+</div>
+</div>
+</div>
+<div class="bg-gradient-to-b from-[#E8EEF5] to-transparent h-px w-full absolute bottom-0"></div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-32 md:pt-32 md:pb-12 px-4 md:px-8 max-w-4xl mx-auto space-y-6">
+<!-- Desktop Back Button & Title -->
+<div class="hidden md:flex items-center gap-4 mb-8">
+<button class="text-on-surface hover:bg-surface-container p-2 rounded-full transition-colors flex items-center">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="text-2xl font-bold tracking-tight text-on-surface">Nuevo reporte</h1>
+</div>
+<!-- Map Preview Card -->
+<section class="bg-surface-container-lowest rounded-[16px] p-4 shadow-[0_4px_20px_rgba(0,0,0,0.04)] relative overflow-hidden">
+<div class="relative w-full h-48 md:h-64 rounded-xl overflow-hidden bg-surface-container-high mb-4">
+<img alt="Map view" class="w-full h-full object-cover opacity-80" data-alt="digital map interface showing city streets with a red location pin marker in the center, light interface style" data-location="Madrid" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRLPziqvS-V0M__jJtPlk4A9i4IIO0CJK2o-LSbppCLO-KBvBWiQfEgPsk4tF1O9jg4UBA5rLFg0u283CsalSFUxP8MP8Y4w8hjtOV2qX_StEBn5QGgVK5hKAmTRKr7pDp4cql3cibZaJxNuZBIH5QD_MQKV9CBvWKbJGogUYtflv00oD1yAiGDGeF5Ztc3_VHERaBGr6eMN-9CGHASm08cRiLp51c19fdEHAaDKaqT_ncxaCiPD3MEkuipkeszpMWdALNbo767H4"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center animate-pulse">
+<div class="w-6 h-6 bg-primary rounded-full border-4 border-white shadow-md"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 bg-surface-container-low p-3 rounded-[12px]">
+<div class="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="location_on">location_on</span>
+</div>
+<div class="flex-1">
+<p class="text-[0.75rem] text-on-surface-variant font-medium uppercase tracking-wider">Ubicación actual</p>
+<p class="text-sm font-semibold text-on-surface">Av. Libertador 1234, Ciudad</p>
+</div>
+<button class="text-primary text-sm font-medium hover:underline">Editar</button>
+</div>
+</section>
+<!-- Incident Details Form -->
+<section class="space-y-6">
+<!-- Type Selector -->
+<div class="bg-surface-container-lowest rounded-[16px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+<h3 class="text-sm font-semibold text-on-surface mb-4">Tipo de incidente</h3>
+<div class="flex flex-wrap gap-3">
+<button class="px-4 py-2 rounded-[24px] bg-primary text-on-primary font-medium text-sm flex items-center gap-2 shadow-[0_2px_10px_rgba(0,94,164,0.2)] transition-transform hover:-translate-y-0.5">
+<span class="material-symbols-outlined text-[18px]" data-icon="car_crash">car_crash</span>
+                        Accidente
+                    </button>
+<button class="px-4 py-2 rounded-[24px] bg-surface-container-low text-on-surface-variant font-medium text-sm flex items-center gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="landscape">landscape</span>
+                        Derrumbe
+                    </button>
+<button class="px-4 py-2 rounded-[24px] bg-surface-container-low text-on-surface-variant font-medium text-sm flex items-center gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="traffic">traffic</span>
+                        Semáforo dañado
+                    </button>
+<button class="px-4 py-2 rounded-[24px] bg-surface-container-low text-on-surface-variant font-medium text-sm flex items-center gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="block">block</span>
+                        Vía bloqueada
+                    </button>
+</div>
+</div>
+<!-- Severity Toggle -->
+<div class="bg-surface-container-lowest rounded-[16px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+<h3 class="text-sm font-semibold text-on-surface mb-4">Severidad</h3>
+<div class="flex gap-2 p-1 bg-surface-container-low rounded-xl">
+<button class="flex-1 py-2 text-sm font-medium rounded-lg text-on-surface-variant hover:bg-white/50 transition-colors">
+<span class="flex items-center justify-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#1D9E75]"></span>
+                            Leve
+                        </span>
+</button>
+<button class="flex-1 py-2 text-sm font-medium rounded-lg bg-white shadow-sm text-on-surface transition-colors border border-outline-variant/15">
+<span class="flex items-center justify-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#EF9F27]"></span>
+                            Moderado
+                        </span>
+</button>
+<button class="flex-1 py-2 text-sm font-medium rounded-lg text-on-surface-variant hover:bg-white/50 transition-colors">
+<span class="flex items-center justify-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#E24B4A]"></span>
+                            Crítico
+                        </span>
+</button>
+</div>
+</div>
+<!-- Description Input -->
+<div class="bg-surface-container-lowest rounded-[16px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+<label class="block text-sm font-semibold text-on-surface mb-2" for="description">Descripción (Opcional)</label>
+<div class="relative">
+<textarea class="w-full bg-surface-container-low border-none rounded-[12px] p-4 text-sm text-on-surface placeholder:text-on-surface-variant focus:ring-2 focus:ring-primary focus:bg-white transition-all resize-none" id="description" placeholder="Añade detalles relevantes sobre el incidente..." rows="3"></textarea>
+</div>
+</div>
+<!-- Photo Upload Area -->
+<div class="bg-surface-container-lowest rounded-[16px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+<h3 class="text-sm font-semibold text-on-surface mb-4">Evidencia visual</h3>
+<div class="border-2 border-dashed border-outline-variant/50 rounded-[12px] p-8 flex flex-col items-center justify-center text-center bg-surface-container-low/50 hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center text-primary mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[24px]" data-icon="photo_camera">photo_camera</span>
+</div>
+<p class="text-sm font-medium text-on-surface">Tomar foto o subir</p>
+<p class="text-[0.75rem] text-on-surface-variant mt-1">Formatos JPG, PNG (Max 5MB)</p>
+</div>
+</div>
+<!-- Submit Button Area -->
+<div class="pt-4 pb-8 md:pb-0">
+<button class="w-full py-4 rounded-[12px] bg-gradient-to-r from-primary to-primary-container text-on-primary font-semibold text-lg shadow-[0_4px_15px_rgba(0,94,164,0.3)] hover:shadow-[0_6px_20px_rgba(0,94,164,0.4)] hover:-translate-y-1 transition-all active:translate-y-0 active:shadow-none flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+                    Enviar reporte
+                </button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="bg-white dark:bg-slate-900 text-[10px] font-medium font-['Inter'] uppercase tracking-wider fixed bottom-0 w-full rounded-t-[24px] z-50 border-none shadow-[0_-4px_20px_rgba(0,0,0,0.07)] md:hidden">
+<div class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-white dark:bg-slate-900 rounded-t-[24px]">
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 gap-1 w-16" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span>Inicio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 gap-1 w-16" href="#">
+<span class="material-symbols-outlined" data-icon="list_alt">list_alt</span>
+<span>Historial</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#378ADD] dark:text-blue-400 scale-110 hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 gap-1 w-16" href="#">
+<span class="material-symbols-outlined" data-icon="add_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+<span>Reportar</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 gap-1 w-16" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span>Alertas</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 gap-1 w-16" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span>Perfil</span>
+</a>
+</div>
+</nav>
+</body></html>

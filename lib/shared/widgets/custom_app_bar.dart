@@ -15,6 +15,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.backgroundColor,
     this.foregroundColor,
     this.elevation,
+    this.showBorder = true,
     this.bottom,
   });
 
@@ -28,6 +29,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Color? backgroundColor;
   final Color? foregroundColor;
   final double? elevation;
+  final bool showBorder;
   final PreferredSizeWidget? bottom;
 
   @override
@@ -40,10 +42,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final fg =
-        foregroundColor ?? theme.appBarTheme.foregroundColor ?? theme.colorScheme.onSurface;
-    final bg =
-        backgroundColor ?? theme.appBarTheme.backgroundColor ?? theme.scaffoldBackgroundColor;
+    final fg = foregroundColor ??
+        theme.appBarTheme.foregroundColor ??
+        theme.colorScheme.onSurface;
+    final bg = backgroundColor ??
+        theme.appBarTheme.backgroundColor ??
+        theme.scaffoldBackgroundColor;
 
     return AppBar(
       backgroundColor: bg,
@@ -53,6 +57,15 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       centerTitle: centerTitle,
+      shape: showBorder
+          ? Border(
+              bottom: BorderSide(
+                color: isDark
+                    ? const Color(0xFF26364D)
+                    : AppColors.border.withAlpha(80),
+              ),
+            )
+          : null,
       leading: showBack
           ? IconButton(
               onPressed: onBack ?? () => Navigator.of(context).maybePop(),
@@ -62,12 +75,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   color: isDark ? const Color(0xFF1B2940) : Colors.white,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   border: Border.all(
-                    color: isDark ? const Color(0xFF26364D) : AppColors.border,
+                    color:
+                        isDark ? const Color(0xFF26364D) : AppColors.border,
                   ),
                 ),
                 child: Icon(
                   Icons.arrow_back_ios_new_rounded,
-                  size: 18,
+                  size: AppSpacing.iconMd,
                   color: fg,
                 ),
               ),
@@ -81,11 +95,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   title,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
                   ),
                 ),
                 Text(
                   subtitle!,
-                  style: theme.textTheme.bodySmall,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             )
@@ -93,6 +110,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               title,
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
               ),
             ),
       actions: actions != null

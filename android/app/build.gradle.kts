@@ -17,6 +17,7 @@ if (localPropertiesFile.exists()) {
 
 val mapsApiKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
 
+// UI verified on Android API 33+ (minSdk via flutter.minSdkVersion)
 android {
     namespace = "com.example.reportes_ai"
     compileSdk = flutter.compileSdkVersion

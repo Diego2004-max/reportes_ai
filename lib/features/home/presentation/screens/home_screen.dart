@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
 import 'package:reportes_ai/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:reportes_ai/features/reports/presentation/screens/report_detail_screen.dart';
@@ -22,7 +23,7 @@ class HomeScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: AppColors.background,
       appBar: CustomAppBar(
         title: 'Reportes AI',
         subtitle: 'Panel personal',
@@ -37,24 +38,42 @@ class HomeScreen extends ConsumerWidget {
               );
             },
             icon: const Icon(Icons.notifications_outlined),
+            color: AppColors.textSecondary,
           ),
         ],
       ),
       body: RefreshIndicator(
+        color: AppColors.primary,
         onRefresh: () async {
           refreshReports(ref);
         },
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.screenH),
           children: [
-            Text(
-              'Hola, ${session.userName ?? 'Usuario'}',
-              style: theme.textTheme.headlineMedium,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'Aquí está el resumen de tu actividad',
-              style: theme.textTheme.bodyMedium,
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Hola, ${session.userName?.split(' ').first ?? 'Usuario'} 👋',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Aquí está el resumen de tu actividad',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.xxl),
             statsAsync.when(

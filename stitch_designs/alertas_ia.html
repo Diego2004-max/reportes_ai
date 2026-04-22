@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VialAI - Alertas IA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-error": "#ffffff",
+                        "on-surface": "#161c21",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#dde3ea",
+                        "surface-container-highest": "#dde3ea",
+                        "outline-variant": "#c0c7d3",
+                        "tertiary-container": "#008560",
+                        "on-tertiary-fixed-variant": "#00513a",
+                        "on-tertiary-fixed": "#002115",
+                        "on-primary": "#ffffff",
+                        "surface": "#f6faff",
+                        "tertiary-fixed": "#86f8c9",
+                        "on-background": "#161c21",
+                        "on-primary-fixed": "#001c38",
+                        "surface-tint": "#0060a8",
+                        "secondary-fixed": "#d3e4fe",
+                        "primary-container": "#1777c9",
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "secondary-container": "#d0e1fb",
+                        "on-error-container": "#93000a",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#ebf1f8",
+                        "primary-fixed-dim": "#a1c9ff",
+                        "primary": "#005ea4",
+                        "surface-container": "#e8eef5",
+                        "primary-fixed": "#d2e4ff",
+                        "secondary": "#505f76",
+                        "tertiary-fixed-dim": "#68dbae",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#004880",
+                        "surface-bright": "#f6faff",
+                        "background": "#f6faff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#e3e9f0",
+                        "surface-dim": "#d5dbe2",
+                        "outline": "#717783",
+                        "on-secondary-container": "#54647a",
+                        "on-tertiary-container": "#f5fff7",
+                        "surface-container-low": "#eef4fb",
+                        "on-surface-variant": "#414751",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "inverse-primary": "#a1c9ff",
+                        "on-primary-container": "#fdfcff",
+                        "tertiary": "#00694c",
+                        "inverse-surface": "#2b3136"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-24 selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-[#F6FAFF]/80 dark:bg-slate-950/80 backdrop-blur-md fixed top-0 w-full z-50 shadow-sm flex justify-between items-center px-6 py-4 w-full transition-all duration-300 ease-in-out">
+<div class="flex items-center gap-3">
+<button class="text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 p-2 rounded-full transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</button>
+<span class="text-xl font-bold tracking-tighter text-[#005EA4] dark:text-blue-400 font-['Inter'] font-semibold tracking-tight">VialAI</span>
+</div>
+<div>
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant/30 flex items-center justify-center">
+<img alt="Perfil de usuario" class="w-full h-full object-cover" data-alt="close-up portrait of a professional young man with short dark hair looking confident in natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFdcvARHRhqqbUx64kRyny1yZ1OC-CAjXjnERrj4ipd6ATwbv0hKoykQT1LGneNzo05lsahbK6u_4Qol7RMb1TRMN8ZcubsYo1wRL_fiZpV5p6EZQkUw7sDuWJzqQdf6NM7dpUxQriPH94NH_7hV6Do2qcGBWUB27RE7X_lM_CBgo6VPYVdR_tq4xik7CQq86O56hIYb9ke7ngTc9Xhrz648OYVjQdpd7-CbtMkBwmGgrGF1mUyXKAq8-ypEO2-EG4_Y_EH_D8xfU"/>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 w-full bg-gradient-to-b from-[#E8EEF5] to-transparent h-px"></div>
+</header>
+<main class="pt-24 px-4 max-w-md mx-auto space-y-6">
+<!-- Header Section -->
+<section class="space-y-1 mt-4">
+<h1 class="text-[2rem] font-semibold tracking-[-0.02em] text-on-surface font-headline leading-tight">Alertas IA</h1>
+<p class="text-[0.875rem] text-on-surface-variant font-body leading-[1.5]">Predicciones basadas en datos históricos</p>
+</section>
+<!-- Risk Summary Card (Neumorphic Depth) -->
+<section>
+<div class="bg-surface-container-lowest rounded-[16px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col gap-4">
+<!-- Decorative ambient glow -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-warning/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="flex justify-between items-start z-10">
+<div>
+<span class="text-[0.75rem] font-medium tracking-wider text-on-surface-variant uppercase">Riesgo en tu zona</span>
+<h2 class="text-[1.5rem] font-semibold tracking-tight text-on-surface mt-1">Moderado</h2>
+</div>
+<div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center text-[#EF9F27]">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+</div>
+<p class="text-[0.875rem] text-on-surface-variant leading-[1.5] z-10">
+                    Probabilidad de congestión alta en vías principales hacia el norte. Sugerimos rutas alternas por la Av. Boyacá.
+                </p>
+<div class="mt-2 flex items-center gap-2 text-[0.75rem] text-on-surface-variant z-10">
+<span class="material-symbols-outlined text-[1rem]">update</span>
+<span>Actualizado hace 2 min</span>
+</div>
+</div>
+</section>
+<!-- Prediction Alert Cards List -->
+<section class="space-y-4">
+<h3 class="text-[1.125rem] font-semibold text-on-surface tracking-tight mb-4">Próximas horas</h3>
+<!-- Card 1: High Risk -->
+<div class="bg-surface-container-lowest rounded-[16px] p-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] relative overflow-hidden transition-all active:scale-[0.98]">
+<!-- Left Border indicator using pseudo-element approach for smooth integration -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-[#E24B4A]"></div>
+<div class="pl-2 flex gap-4 items-start">
+<div class="w-10 h-10 rounded-full bg-[#E24B4A]/10 flex items-center justify-center text-[#E24B4A] shrink-0 mt-1">
+<span class="material-symbols-outlined">car_crash</span>
+</div>
+<div class="flex-1 space-y-1">
+<div class="flex justify-between items-start">
+<h4 class="text-[1rem] font-semibold text-on-surface">Autopista Norte</h4>
+<span class="text-[0.75rem] font-medium text-[#E24B4A] bg-[#E24B4A]/10 px-2 py-0.5 rounded-full">Riesgo Alto</span>
+</div>
+<div class="flex items-center gap-1.5 text-[0.875rem] text-on-surface-variant">
+<span class="material-symbols-outlined text-[1rem]">schedule</span>
+<span>Hoy 5PM – 8PM</span>
+</div>
+<div class="pt-2 flex items-center gap-2">
+<span class="inline-flex items-center gap-1 text-[0.75rem] text-primary font-medium bg-primary/10 px-2.5 py-1 rounded-full">
+<span class="material-symbols-outlined text-[0.875rem]">auto_awesome</span>
+                                94% certeza
+                            </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Moderate Risk -->
+<div class="bg-surface-container-lowest rounded-[16px] p-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] relative overflow-hidden transition-all active:scale-[0.98]">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-[#EF9F27]"></div>
+<div class="pl-2 flex gap-4 items-start">
+<div class="w-10 h-10 rounded-full bg-[#EF9F27]/10 flex items-center justify-center text-[#EF9F27] shrink-0 mt-1">
+<span class="material-symbols-outlined">traffic</span>
+</div>
+<div class="flex-1 space-y-1">
+<div class="flex justify-between items-start">
+<h4 class="text-[1rem] font-semibold text-on-surface">Av. El Dorado</h4>
+<span class="text-[0.75rem] font-medium text-[#EF9F27] bg-[#EF9F27]/10 px-2 py-0.5 rounded-full">Tráfico Lento</span>
+</div>
+<div class="flex items-center gap-1.5 text-[0.875rem] text-on-surface-variant">
+<span class="material-symbols-outlined text-[1rem]">schedule</span>
+<span>Hoy 6PM – 7PM</span>
+</div>
+<div class="pt-2 flex items-center gap-2">
+<span class="inline-flex items-center gap-1 text-[0.75rem] text-primary font-medium bg-primary/10 px-2.5 py-1 rounded-full">
+<span class="material-symbols-outlined text-[0.875rem]">auto_awesome</span>
+                                88% certeza
+                            </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 3: Safe Zone -->
+<div class="bg-surface-container-lowest rounded-[16px] p-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] relative overflow-hidden transition-all active:scale-[0.98]">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-[#1D9E75]"></div>
+<div class="pl-2 flex gap-4 items-start">
+<div class="w-10 h-10 rounded-full bg-[#1D9E75]/10 flex items-center justify-center text-[#1D9E75] shrink-0 mt-1">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div class="flex-1 space-y-1">
+<div class="flex justify-between items-start">
+<h4 class="text-[1rem] font-semibold text-on-surface">Av. Circunvalar</h4>
+<span class="text-[0.75rem] font-medium text-[#1D9E75] bg-[#1D9E75]/10 px-2 py-0.5 rounded-full">Despejado</span>
+</div>
+<div class="flex items-center gap-1.5 text-[0.875rem] text-on-surface-variant">
+<span class="material-symbols-outlined text-[1rem]">schedule</span>
+<span>Hoy 5PM – 8PM</span>
+</div>
+<div class="pt-2 flex items-center gap-2">
+<span class="inline-flex items-center gap-1 text-[0.75rem] text-primary font-medium bg-primary/10 px-2.5 py-1 rounded-full">
+<span class="material-symbols-outlined text-[0.875rem]">auto_awesome</span>
+                                96% certeza
+                            </span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Disclaimer -->
+<section class="pt-8 pb-4 text-center">
+<p class="text-[0.75rem] text-on-surface-variant/80 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[1rem]">info</span>
+                Predicciones generadas por IA · No reemplazan autoridades oficiales
+            </p>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-white dark:bg-slate-900 shadow-[0_-4px_20px_rgba(0,0,0,0.07)] fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 rounded-t-[24px] z-50 md:hidden border-none text-[10px] font-medium font-['Inter'] uppercase tracking-wider">
+<button class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 w-16 gap-1">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span>Inicio</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 w-16 gap-1">
+<span class="material-symbols-outlined text-2xl">list_alt</span>
+<span>Historial</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 w-16 gap-1 relative -top-3">
+<div class="bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-3xl">add_circle</span>
+</div>
+<span class="mt-1">Reportar</span>
+</button>
+<!-- Active Tab: Alertas -->
+<button class="flex flex-col items-center justify-center text-[#378ADD] dark:text-blue-400 scale-110 hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 w-16 gap-1">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<span>Alertas</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 w-16 gap-1">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span>Perfil</span>
+</button>
+</nav>
+</body></html>

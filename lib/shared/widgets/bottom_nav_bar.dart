@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reportes_ai/app/theme/app_colors.dart';
+import 'package:reportes_ai/app/theme/app_spacing.dart';
 
 class AppBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -22,12 +23,17 @@ class AppBottomNavBar extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          0,
+          AppSpacing.lg,
+          AppSpacing.md,
+        ),
         child: Material(
           color: Colors.transparent,
           child: Container(
-            height: 84,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+            height: AppSpacing.bottomNavHeight + AppSpacing.md,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
             decoration: BoxDecoration(
               color: isDark ? theme.cardColor : Colors.white,
               borderRadius: BorderRadius.circular(28),
