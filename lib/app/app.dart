@@ -18,7 +18,6 @@ class AiReportsApp extends ConsumerWidget {
       title: 'AI Reports',
       routerConfig: router,
       theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
     );
   }
