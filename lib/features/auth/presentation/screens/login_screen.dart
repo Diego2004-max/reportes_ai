@@ -258,22 +258,22 @@ class _BrandHeader extends StatelessWidget {
         BrandLogo(size: 68),
         SizedBox(height: 24),
         Text(
-          'VialAI',
+          'ReportIA',
           style: TextStyle(
             fontSize: 32,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w800,
             letterSpacing: -0.5,
             color: AppColors.primary,
           ),
         ),
         SizedBox(height: 8),
         Text(
-          'Reporta · Predice · Protege',
+          'Gestión inteligente de reportes',
           style: TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.w300,
+            fontWeight: FontWeight.w400,
             color: AppColors.textSecondary,
-            letterSpacing: 0.25,
+            letterSpacing: 0.1,
             height: 1.5,
           ),
         ),
