@@ -5,10 +5,12 @@ import 'package:go_router/go_router.dart';
 import 'package:reportes_ai/app/router/app_router.dart';
 import 'package:reportes_ai/app/theme/app_colors.dart';
 import 'package:reportes_ai/app/theme/app_spacing.dart';
-import 'package:reportes_ai/shared/widgets/custom_textfield.dart';
-import 'package:reportes_ai/shared/widgets/primary_button.dart';
 import 'package:reportes_ai/state/auth_provider.dart';
 import 'package:reportes_ai/state/session_provider.dart';
+import 'package:reportes_ai/shared/widgets/brand_logo.dart';
+import 'package:reportes_ai/shared/widgets/vial_card.dart';
+import 'package:reportes_ai/shared/widgets/vial_text_field.dart';
+import 'package:reportes_ai/shared/widgets/vial_button.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -65,64 +67,38 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: size.height - 100),
             child: IntrinsicHeight(
               child: Form(
                 key: _formKey,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: AppSpacing.huge),
+                    const SizedBox(height: 48),
                     _BrandHeader(),
-                    const SizedBox(height: AppSpacing.xxxl),
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.xxl),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusXl),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.shadow,
-                            blurRadius: 20,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
+                    const SizedBox(height: 48),
+                    VialCard(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(
-                            'Bienvenido',
-                            style: theme.textTheme.headlineMedium,
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            'Inicia sesión para continuar',
-                            style: theme.textTheme.bodyMedium,
-                          ),
-                          const SizedBox(height: AppSpacing.xxl),
-                          CustomTextField(
+                          const SizedBox(height: 8),
+                          VialTextField(
                             label: 'Correo electrónico',
-                            hint: 'tu@correo.com',
+                            hint: 'usuario@ejemplo.com',
                             controller: _emailCtrl,
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
                             autofillHints: const [AutofillHints.email],
-                            prefixIcon: const Icon(
-                              Icons.email_outlined,
-                              size: 20,
-                              color: AppColors.textSecondary,
-                            ),
+                            prefixIcon: const Icon(Icons.mail_outline_rounded, color: AppColors.outline),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Ingresa tu correo';
@@ -136,19 +112,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: AppSpacing.lg),
-                          CustomTextField(
+                          const SizedBox(height: 20),
+                          VialTextField(
                             label: 'Contraseña',
                             hint: '••••••••',
                             controller: _passwordCtrl,
                             obscureText: true,
                             textInputAction: TextInputAction.done,
                             autofillHints: const [AutofillHints.password],
-                            prefixIcon: const Icon(
-                              Icons.lock_outline_rounded,
-                              size: 20,
-                              color: AppColors.textSecondary,
-                            ),
+                            prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.outline),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Ingresa tu contraseña';
@@ -160,66 +132,113 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             },
                             onFieldSubmitted: (_) => _onLogin(),
                           ),
-                          const SizedBox(height: AppSpacing.xl),
-                          PrimaryButton(
-                            label: 'Iniciar Sesión',
+                          
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 8.0, bottom: 16.0),
+                              child: TextButton(
+                                onPressed: () {},
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: const Text(
+                                  '¿Olvidaste tu contraseña?',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          
+                          VialButton(
                             onPressed: _onLogin,
+                            text: 'Iniciar sesión',
                             isLoading: _isLoading,
                           ),
-                          const SizedBox(height: AppSpacing.lg),
+                           
+                          const SizedBox(height: 24),
                           Row(
                             children: [
-                              const Expanded(
-                                child: Divider(color: AppColors.border),
+                              Expanded(
+                                child: Container(height: 1, color: AppColors.surfaceContainerHighest),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.md,
+                              const Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16,
                                 ),
                                 child: Text(
-                                  'o continúa con',
-                                  style: theme.textTheme.labelMedium,
+                                  'o continuar con',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.outline,
+                                  ),
                                 ),
                               ),
-                              const Expanded(
-                                child: Divider(color: AppColors.border),
+                              Expanded(
+                                child: Container(height: 1, color: AppColors.surfaceContainerHighest),
                               ),
                             ],
                           ),
-                          const SizedBox(height: AppSpacing.lg),
-                          _GoogleSignInButton(
+                          const SizedBox(height: 24),
+                          
+                          VialButton(
+                            isSecondary: true,
                             onPressed: () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text(
-                                    'Google Sign-In se conecta en el siguiente bloque.',
-                                  ),
+                                  content: Text('Google Sign-In próximamente.'),
                                 ),
                               );
                             },
+                            text: 'Google',
+                            icon: Image.network(
+                              'https://lh3.googleusercontent.com/aida-public/AB6AXuA4M3h0fwvW9FNN239hABmil0c7p8A_TfNbQvt_Ks4ikfiBd5c-gdeRFRvmK5GnIlYc2qkKpA8iyTwZUFBZz-vvvK0_QS-8B1xzcZaSgFN241xZupqcMmIu0rtGIAZEPyOecC4Dt9d-fwf4SeoVXDuJedMh7TSH_nLSmsVtcSXsbtb2MwUlI6SIURrWe0mMlUvsTVUmgxiWMSke4Ql59A-hZdVg0o0OvdbPQVMrCAEI48djLkcldBveW69cQpZ9XB7-N-E9MB7FFss',
+                              width: 20,
+                              height: 20,
+                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.g_mobiledata, color: AppColors.textPrimary),
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                '¿No tienes una cuenta? ',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: _goToRegister,
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: const Text(
+                                  'Regístrate',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
                     const Spacer(),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.xl,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '¿No tienes cuenta? ',
-                            style: theme.textTheme.bodyMedium,
-                          ),
-                          TextButton(
-                            onPressed: _goToRegister,
-                            child: const Text('Regístrate'),
-                          ),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -234,58 +253,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 class _BrandHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       children: [
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.primaryDark],
-            ),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          ),
-          child: const Icon(
-            Icons.assessment_rounded,
-            color: AppColors.textOnPrimary,
-            size: 36,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        const Text(
-          'Reportes AI',
+        BrandLogo(size: 68),
+        SizedBox(height: 24),
+        Text(
+          'VialAI',
           style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            fontSize: 32,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.5,
+            color: AppColors.primary,
           ),
         ),
-        const SizedBox(height: AppSpacing.xs),
-        const Text(
-          'Gestión inteligente de reportes',
+        SizedBox(height: 8),
+        Text(
+          'Reporta · Predice · Protege',
           style: TextStyle(
             fontSize: 14,
+            fontWeight: FontWeight.w300,
             color: AppColors.textSecondary,
+            letterSpacing: 0.25,
+            height: 1.5,
           ),
         ),
       ],
-    );
-  }
-}
-
-class _GoogleSignInButton extends StatelessWidget {
-  const _GoogleSignInButton({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: AppSpacing.buttonHeight,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        child: const Text('Continuar con Google'),
-      ),
     );
   }
 }
