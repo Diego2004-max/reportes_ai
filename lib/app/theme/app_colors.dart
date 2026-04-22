@@ -27,8 +27,9 @@ abstract final class AppColors {
   static const Color textDisabled   = Color(0xFF94A3B8);
   static const Color textOnPrimary  = Color(0xFFFFFFFF);
 
-  // keep alias used in screens
-  static const Color onPrimary      = textOnPrimary;
+  // keep aliases used in screens
+  static const Color onPrimary        = textOnPrimary;
+  static const Color primaryContainer = primarySoft;
 
   // ── SEMANTIC ──────────────────────────────────────────────
   static const Color success        = Color(0xFF22C55E);
