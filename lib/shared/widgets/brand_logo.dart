@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:reportes_ai/app/theme/app_colors.dart';
+import 'package:reportes_ai/app/theme/app_spacing.dart';
 
 class BrandLogo extends StatelessWidget {
-  const BrandLogo({super.key, this.size = 68});
+  const BrandLogo({super.key, this.size = 64});
 
   final double size;
 
@@ -12,19 +13,9 @@ class BrandLogo extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.primary, AppColors.primaryDark],
-        ),
-        borderRadius: BorderRadius.circular(size * 0.333),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withAlpha(60),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        color: AppColors.text,
+        borderRadius: BorderRadius.circular(size * 0.34),
+        boxShadow: AppShadows.float,
       ),
       child: Center(
         child: CustomPaint(
@@ -43,29 +34,25 @@ class _BarChartPainter extends CustomPainter {
     final h = size.height / 34;
     final paint = Paint()..style = PaintingStyle.fill;
 
-    // Left bar
-    paint.color = Colors.white.withOpacity(0.85);
+    paint.color = Colors.white.withOpacity(0.7);
     canvas.drawRRect(
       RRect.fromLTRBR(2 * w, 18 * h, 9 * w, 32 * h, const Radius.circular(2)),
       paint,
     );
 
-    // Center bar (tallest)
     paint.color = Colors.white;
     canvas.drawRRect(
       RRect.fromLTRBR(13.5 * w, 10 * h, 20.5 * w, 32 * h, const Radius.circular(2)),
       paint,
     );
 
-    // Right bar
-    paint.color = Colors.white.withOpacity(0.85);
+    paint.color = Colors.white.withOpacity(0.7);
     canvas.drawRRect(
       RRect.fromLTRBR(25 * w, 2 * h, 32 * w, 32 * h, const Radius.circular(2)),
       paint,
     );
 
-    // Green accent dot (top-right of right bar)
-    paint.color = AppColors.primaryLight;
+    paint.color = AppColors.success;
     canvas.drawCircle(Offset(29 * w, 3 * h), 3.5 * w, paint);
   }
 

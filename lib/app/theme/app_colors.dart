@@ -1,63 +1,75 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppColors {
-  // ── PRIMARY (forest green) ────────────────────────────────
-  static const Color primary        = Color(0xFF0A5531);
-  static const Color primaryLight   = Color(0xFF1EA969);
-  static const Color primaryDark    = Color(0xFF05381F);
-  static const Color primarySoft    = Color(0xFFDDF7EA);
-  static const Color primaryBadge   = Color(0x140A5531); // rgba(10,85,49,0.08)
+  // ── V3: NEUMORPHIC BLUE-GRAY PALETTE ─────────────────────────────────────
 
-  // ── SECONDARY ─────────────────────────────────────────────
-  static const Color secondary      = Color(0xFF1E293B);
+  // Backgrounds
+  static const Color bg             = Color(0xFFE8ECF3);
+  static const Color bg2            = Color(0xFFDFE4EE);
+  static const Color surface        = Color(0xFFFFFFFF);
+  static const Color surfaceVariant = Color(0xFFF0F4FA);
 
-  // ── BACKGROUNDS ───────────────────────────────────────────
-  static const Color background             = Color(0xFFF5F7FB);
-  static const Color surface                = Color(0xFFFFFFFF);
-  static const Color surfaceVariant         = Color(0xFFE4EBFA);
-  static const Color surfaceContainerLowest = Color(0xFFFFFFFF);
-  static const Color surfaceContainerLow    = Color(0xFFF5F7FB);
-  static const Color surfaceContainer       = Color(0xFFE4EBFA);
-  static const Color surfaceContainerHigh   = Color(0xFFD8E1F5);
-  static const Color surfaceContainerHighest= Color(0xFFCFD9F0);
+  // Text
+  static const Color text  = Color(0xFF1C2033);
+  static const Color muted = Color(0xFF7B84A0);
+  static const Color faint = Color(0xFFA8B0C8);
 
-  // ── TEXT ──────────────────────────────────────────────────
-  static const Color textPrimary    = Color(0xFF0F172A);
-  static const Color textSecondary  = Color(0xFF64748B);
-  static const Color textDisabled   = Color(0xFF94A3B8);
-  static const Color textOnPrimary  = Color(0xFFFFFFFF);
+  // Borders
+  static const Color border = Color(0xFFD4DBE8);
 
-  // keep aliases used in screens
-  static const Color onPrimary        = textOnPrimary;
-  static const Color primaryContainer = primarySoft;
+  // Único acento (electric blue)
+  static const Color accent     = Color(0xFF2B4BFF);
+  static const Color accentSoft = Color(0x142B4BFF);
 
-  // ── SEMANTIC ──────────────────────────────────────────────
-  static const Color success        = Color(0xFF22C55E);
-  static const Color successLight   = Color(0xFFDCFCE7);
-  static const Color warning        = Color(0xFFF59E0B);
-  static const Color warningLight   = Color(0xFFFEF3C7);
-  static const Color error          = Color(0xFFEF4444);
-  static const Color errorLight     = Color(0xFFFEE2E2);
-  static const Color info           = Color(0xFF3B82F6);
-  static const Color infoLight      = Color(0xFFEFF6FF);
+  // Semantic (desaturados, silenciados)
+  static const Color success     = Color(0xFF34C989);
+  static const Color successSoft = Color(0x1234C989);
+  static const Color warning     = Color(0xFFDC963C);
+  static const Color warningSoft = Color(0x12DC963C);
+  static const Color error       = Color(0xFFE05555);
+  static const Color errorSoft   = Color(0x12E05555);
 
-  // ── BORDERS / DIVIDERS ────────────────────────────────────
-  static const Color border         = Color(0xFFE2E8F0);
-  static const Color divider        = Color(0xFFF1F5F9);
-  static const Color outline        = Color(0xFF94A3B8);
+  // Shadows neumórficas
+  static const Color shadowDark  = Color(0x8CAEB7CE);
+  static const Color shadowLight = Color(0xE6FFFFFF);
 
-  // ── SHADOWS ───────────────────────────────────────────────
-  static const Color shadow         = Color(0x0A0F172A); // very soft neutral
-  static const Color shadowTint     = Color(0x000F172A); // transparent — no blue tint
+  // ── BACKWARD COMPAT ALIASES ───────────────────────────────────────────────
+  static const Color primary             = accent;
+  static const Color primaryLight        = Color(0xFF5B75FF);
+  static const Color primaryDark         = Color(0xFF1A2E99);
+  static const Color primarySoft         = accentSoft;
+  static const Color primaryBadge        = accentSoft;
+  static const Color primaryContainer    = accentSoft;
+  static const Color onPrimary           = Color(0xFFFFFFFF);
+  static const Color textOnPrimary       = Color(0xFFFFFFFF);
+  static const Color textPrimary         = text;
+  static const Color textSecondary       = muted;
+  static const Color textDisabled        = faint;
+  static const Color background          = bg;
+  static const Color outline             = border;
+  static const Color divider             = Color(0xFFE8ECF3);
+  static const Color shadow              = Color(0x0A1C2033);
+  static const Color shadowTint          = Color(0x001C2033);
+  static const Color secondary           = text;
+  static const Color info                = accent;
+  static const Color infoLight           = accentSoft;
+  static const Color successLight        = successSoft;
+  static const Color warningLight        = warningSoft;
+  static const Color errorLight          = errorSoft;
+  static const Color surfaceContainerLowest    = Color(0xFFFFFFFF);
+  static const Color surfaceContainerLow       = Color(0xFFF0F4FA);
+  static const Color surfaceContainer          = Color(0xFFE4EBFA);
+  static const Color surfaceContainerHigh      = surfaceVariant;
+  static const Color surfaceContainerHighest   = Color(0xFFD4DBE8);
 
-  // ── DARK MODE ─────────────────────────────────────────────
-  static const Color darkBg             = Color(0xFF101827);
-  static const Color darkSurface        = Color(0xFF162133);
-  static const Color darkSurfaceVariant = Color(0xFF1B2940);
-  static const Color darkBorder         = Color(0xFF2A3A52);
-  static const Color darkDivider        = Color(0xFF1F2F45);
-  static const Color darkPrimary        = Color(0xFF2FBF71);
-  static const Color darkTextPrimary    = Color(0xFFF8FAFC);
-  static const Color darkTextSecondary  = Color(0xFFB7C3D4);
-  static const Color darkTextDisabled   = Color(0xFF8EA0B7);
+  // ── DARK MODE ─────────────────────────────────────────────────────────────
+  static const Color darkBg             = Color(0xFF1C2033);
+  static const Color darkSurface        = Color(0xFF252B40);
+  static const Color darkSurfaceVariant = Color(0xFF2D3452);
+  static const Color darkBorder         = Color(0xFF3D4566);
+  static const Color darkDivider        = Color(0xFF2D3452);
+  static const Color darkPrimary        = accent;
+  static const Color darkTextPrimary    = Color(0xFFF0F2FA);
+  static const Color darkTextSecondary  = Color(0xFFA8B0C8);
+  static const Color darkTextDisabled   = Color(0xFF7B84A0);
 }
