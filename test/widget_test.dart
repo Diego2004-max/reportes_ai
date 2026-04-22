@@ -12,8 +12,4 @@ void main() {
   test('sanity test', () {
     expect(1 + 1, 2);
   });
-
-
-
-  HSLColor
 }
