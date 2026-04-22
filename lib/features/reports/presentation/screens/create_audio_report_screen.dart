@@ -1,0 +1,424 @@
+import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
+
+import 'package:reportes_ai/app/theme/app_colors.dart';
+import 'package:reportes_ai/core/services/location_service.dart';
+import 'package:reportes_ai/core/services/voice_service.dart';
+import 'package:reportes_ai/core/services/speech_service.dart';
+import 'package:reportes_ai/state/report_provider.dart';
+import 'package:reportes_ai/state/session_provider.dart';
+import 'package:reportes_ai/shared/widgets/vial_card.dart';
+import 'package:reportes_ai/shared/widgets/vial_button.dart';
+import 'package:reportes_ai/shared/widgets/vial_text_field.dart';
+
+class CreateAudioReportScreen extends ConsumerStatefulWidget {
+  const CreateAudioReportScreen({super.key});
+
+  @override
+  ConsumerState<CreateAudioReportScreen> createState() =>
+      _CreateAudioReportScreenState();
+}
+
+class _CreateAudioReportScreenState extends ConsumerState<CreateAudioReportScreen> {
+  final _descriptionController = TextEditingController();
+
+  final LocationService _locationService = LocationService();
+  final VoiceService _voiceService = VoiceService();
+  final SpeechService _speechService = SpeechService();
+  final ImagePicker _imagePicker = ImagePicker();
+
+  bool _isLoading = false;
+  bool _isGettingLocation = false;
+  bool _isPickingImage = false;
+  bool _isRecording = false;
+  String _transcription = '';
+
+  String _selectedCategory = 'Accidente';
+  String _selectedSeverity = 'Moderado';
+
+  Position? _currentPosition;
+  String? _locationLabel;
+
+  String? _imagePath;
+  Uint8List? _imageBytes;
+  
+  String? _audioPath;
+
+  final Map<String, IconData> _categories = {
+    'Accidente': Icons.car_crash_rounded,
+    'Derrumbe': Icons.landscape_rounded,
+    'Semáforo dañado': Icons.traffic_rounded,
+    'Vía bloqueada': Icons.block_rounded,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentLocation();
+  }
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    _voiceService.dispose();
+    _speechService.cancelListening();
+    super.dispose();
+  }
+
+  Future<void> _loadCurrentLocation() async {
+    setState(() => _isGettingLocation = true);
+    try {
+      final position = await _locationService.getCurrentLocation();
+      final address = await _locationService.getReadableAddress(
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
+      if (!mounted) return;
+      setState(() {
+        _currentPosition = position;
+        _locationLabel = address ??
+            'Lat ${position.latitude.toStringAsFixed(5)}, Lng ${position.longitude.toStringAsFixed(5)}';
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No se pudo obtener ubicación: $e')));
+    } finally {
+      if (mounted) setState(() => _isGettingLocation = false);
+    }
+  }
+
+  Future<void> _startRecording() async {
+    try {
+      await _voiceService.startRecording();
+      setState(() {
+        _isRecording = true;
+        _audioPath = null;
+        _transcription = '';
+      });
+      // Speech-to-text runs in parallel to transcribe while recording
+      _speechService.startListening(
+        onResult: (text, isFinal) {
+          if (!mounted) return;
+          setState(() => _transcription = text);
+          if (isFinal && text.isNotEmpty && _descriptionController.text.isEmpty) {
+            _descriptionController.text = text;
+          }
+        },
+      ).catchError((_) {}); // speech may be unavailable on some devices
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No se pudo grabar el audio: $e')));
+    }
+  }
+
+  Future<void> _stopRecording() async {
+    try {
+      final path = await _voiceService.stopRecording();
+      await _speechService.stopListening();
+      if (!mounted) return;
+      setState(() {
+        _isRecording = false;
+        _audioPath = path;
+        if (_transcription.isNotEmpty && _descriptionController.text.isEmpty) {
+          _descriptionController.text = _transcription;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isRecording = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No se pudo detener la grabación: $e')));
+    }
+  }
+
+  Future<void> _deleteAudio() async {
+    if (_isRecording) {
+      await _voiceService.cancelRecording();
+      await _speechService.cancelListening();
+    }
+    if (!mounted) return;
+    setState(() {
+      _isRecording = false;
+      _audioPath = null;
+      _transcription = '';
+    });
+  }
+
+  Future<void> _submitReport() async {
+    final session = ref.read(sessionProvider);
+    if (session.userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Debes iniciar sesión')));
+      return;
+    }
+    if (_currentPosition == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Debes capturar ubicación')));
+      return;
+    }
+    if (_isRecording) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Detén la grabación antes de enviar')));
+      return;
+    }
+    if (_audioPath == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Debes grabar un audio obligatoriamente')));
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      final generatedTitle = '$_selectedCategory - $_selectedSeverity - Audio';
+      
+      await ref.read(reportRepositoryProvider).createReport(
+            userId: session.userId!,
+            title: generatedTitle,
+            description: _descriptionController.text.trim().isEmpty 
+                 ? 'Reporte enviado por audio' 
+                 : _descriptionController.text.trim(),
+            category: _selectedCategory,
+            locationLabel: _locationLabel,
+            latitude: _currentPosition?.latitude,
+            longitude: _currentPosition?.longitude,
+            imagePaths: _imagePath != null ? [_imagePath!] : const [],
+            audioPath: _audioPath,
+          );
+
+      refreshReports(ref);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reporte de audio enviado')));
+      Navigator.pop(context);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainerLowest.withAlpha(200),
+            border: Border(bottom: BorderSide(color: AppColors.surfaceContainerHighest)),
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.primary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Nuevo reporte por IA',
+          style: TextStyle(
+            color: AppColors.primary,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 1. Map Preview Card
+              VialCard(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Container(
+                      height: 120,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(12),
+                        image: const DecorationImage(
+                          image: NetworkImage('https://lh3.googleusercontent.com/aida-public/AB6AXuBRLPziqvS-V0M__jJtPlk4A9i4IIO0CJK2o-LSbppCLO-KBvBWiQfEgPsk4tF1O9jg4UBA5rLFg0u283CsalSFUxP8MP8Y4w8hjtOV2qX_StEBn5QGgVK5hKAmTRKr7pDp4cql3cibZaJxNuZBIH5QD_MQKV9CBvWKbJGogUYtflv00oD1yAiGDGeF5Ztc3_VHERaBGr6eMN-9CGHASm08cRiLp51c19fdEHAaDKaqT_ncxaCiPD3MEkuipkeszpMWdALNbo767H4'),
+                          fit: BoxFit.cover, opacity: 0.8,
+                        ),
+                      ),
+                      child: Center(
+                        child: Container(
+                          width: 48, height: 48,
+                          decoration: BoxDecoration(color: AppColors.primary.withAlpha(50), shape: BoxShape.circle),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: AppColors.surfaceContainerLow, borderRadius: BorderRadius.circular(12)),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 32, height: 32,
+                            decoration: BoxDecoration(color: AppColors.primaryContainer.withAlpha(50), shape: BoxShape.circle),
+                            child: const Icon(Icons.location_on_rounded, color: AppColors.primary, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('UBICACIÓN ACTUAL', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary, letterSpacing: 1.0)),
+                                _isGettingLocation
+                                    ? const SizedBox(height: 14, width: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                                    : Text(_locationLabel ?? 'Buscando...', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary), maxLines: 1),
+                              ],
+                            ),
+                          ),
+                          TextButton(onPressed: _isGettingLocation ? null : _loadCurrentLocation, child: const Text('Actualizar')),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+               // 2. Type Selector
+              VialCard(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Categoría inicial', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: _categories.entries.map((entry) {
+                        final isSelected = _selectedCategory == entry.key;
+                        return InkWell(
+                          onTap: () => setState(() => _selectedCategory = entry.key),
+                          borderRadius: BorderRadius.circular(24),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppColors.primary : AppColors.surfaceContainerLow,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: isSelected ? [BoxShadow(color: AppColors.primary.withAlpha(50), blurRadius: 10, offset: const Offset(0, 2))] : [],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(entry.value, size: 18, color: isSelected ? AppColors.onPrimary : AppColors.textSecondary),
+                                const SizedBox(width: 8),
+                                Text(entry.key, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: isSelected ? AppColors.onPrimary : AppColors.textSecondary)),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // 3. Microphone specific Area
+              VialCard(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    const Text('Habla con el asistente de emergencia VialAI', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 24),
+                    GestureDetector(
+                      onTap: _isRecording ? _stopRecording : _startRecording,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: _isRecording ? 100 : 80,
+                        height: _isRecording ? 100 : 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _isRecording ? AppColors.error : AppColors.primaryContainer.withAlpha(50),
+                          boxShadow: _isRecording ? [BoxShadow(color: AppColors.error.withAlpha(100), blurRadius: 20, spreadRadius: 10)] : [],
+                        ),
+                        child: Icon(
+                          _isRecording ? Icons.stop_rounded : Icons.mic_rounded,
+                          size: 40,
+                          color: _isRecording ? Colors.white : AppColors.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _isRecording ? 'Grabando narración...' : (_audioPath != null ? 'Audio capturado.' : 'Presiona para grabar detalles por voz'),
+                      style: TextStyle(
+                        color: _isRecording ? AppColors.error : AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (_isRecording && _transcription.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            _transcription,
+                            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, fontStyle: FontStyle.italic),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    if (_audioPath != null && !_isRecording)
+                       TextButton(onPressed: _deleteAudio, child: const Text('Eliminar y rehacer', style: TextStyle(color: AppColors.error))),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // 4. Description Input
+              VialCard(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Transcripción / Peticiones especiales (Opcional)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 16),
+                    Container(
+                      decoration: BoxDecoration(color: AppColors.surfaceContainerLow, borderRadius: BorderRadius.circular(12)),
+                      child: TextField(
+                        controller: _descriptionController,
+                        maxLines: 2,
+                        decoration: const InputDecoration(
+                          hintText: 'Se auto-llena al grabar, o escribe manualmente...',
+                          hintStyle: TextStyle(color: AppColors.outline, fontSize: 14),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.all(16),
+                        ),
+                        style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Submit Button
+              VialButton(
+                onPressed: _submitReport,
+                text: 'Enviar reporte inteligente',
+                isLoading: _isLoading,
+                icon: const Icon(Icons.send_rounded, size: 20),
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

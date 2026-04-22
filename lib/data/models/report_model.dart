@@ -1,0 +1,73 @@
+class ReportModel {
+  final String id;
+  final String userId;
+  final String title;
+  final String description;
+  final String category;
+  final String status;
+  final DateTime createdAt;
+  final DateTime? expiresAt;
+  final String? locationLabel;
+  final double? latitude;
+  final double? longitude;
+  final List<String> imagePaths;
+  final String? audioPath;
+
+  const ReportModel({
+    required this.id,
+    required this.userId,
+    required this.title,
+    required this.description,
+    required this.category,
+    required this.status,
+    required this.createdAt,
+    this.expiresAt,
+    this.locationLabel,
+    this.latitude,
+    this.longitude,
+    this.imagePaths = const [],
+    this.audioPath,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'userId': userId,
+      'title': title,
+      'description': description,
+      'category': category,
+      'status': status,
+      'createdAt': createdAt.toIso8601String(),
+      'expiresAt': expiresAt?.toIso8601String(),
+      'locationLabel': locationLabel,
+      'latitude': latitude,
+      'longitude': longitude,
+      'imagePaths': imagePaths,
+      'audioPath': audioPath,
+    };
+  }
+
+  factory ReportModel.fromMap(Map<String, dynamic> map) {
+    final createdAtRaw = map['createdAt'] ?? map['created_at'];
+    final expiresAtRaw = map['expiresAt'] ?? map['expires_at'];
+    final imageUrl = map['image_url'] as String?;
+
+    return ReportModel(
+      id: map['id'] as String,
+      userId: (map['userId'] ?? map['user_id']) as String,
+      title: map['title'] as String,
+      description: map['description'] as String,
+      category: map['category'] as String,
+      status: map['status'] as String,
+      createdAt: DateTime.parse(createdAtRaw as String),
+      expiresAt:
+          expiresAtRaw != null ? DateTime.parse(expiresAtRaw as String) : null,
+      locationLabel: (map['locationLabel'] ?? map['location_label']) as String?,
+      latitude: (map['latitude'] as num?)?.toDouble(),
+      longitude: (map['longitude'] as num?)?.toDouble(),
+      imagePaths: (map['imagePaths'] as List?)?.cast<String>() ??
+          (imageUrl != null && imageUrl.isNotEmpty ? [imageUrl] : const []),
+      audioPath: (map['audioPath'] ?? map['audio_url']) as String?,
+    );
+  }
+}

@@ -1,36 +1,32 @@
-import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+import 'package:reportes_ai/app/app.dart';
+import 'package:reportes_ai/data/local/hive/hive_service.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MapScreen(),
-    );
+  const supabaseUrl = 'https://ytvikiovumjlosbsjmnl.supabase.co';
+  const supabasePublishableKey = String.fromEnvironment(
+    'SUPABASE_PUBLISHABLE_KEY',
+  );
+
+  if (supabasePublishableKey.isEmpty) {
+    throw Exception('Falta SUPABASE_PUBLISHABLE_KEY');
   }
-}
 
-class MapScreen extends StatelessWidget {
-  const MapScreen({super.key});
+  await Supabase.initialize(
+    url: supabaseUrl,
+    anonKey: supabasePublishableKey,
+  );
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Mapa Reportes AI"),
-      ),
-      body: GoogleMap(
-        initialCameraPosition: const CameraPosition(
-          target: LatLng(1.2136, -77.2811), // Pasto
-          zoom: 14,
-        ),
-      ),
-    );
-  }
+  await HiveService.init();
+
+  runApp(
+    const ProviderScope(
+      child: AiReportsApp(),
+    ),
+  );
 }

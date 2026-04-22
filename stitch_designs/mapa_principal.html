@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VialAI - Mapa Principal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#ffffff",
+                        "on-surface": "#161c21",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#dde3ea",
+                        "surface-container-highest": "#dde3ea",
+                        "outline-variant": "#c0c7d3",
+                        "tertiary-container": "#008560",
+                        "on-tertiary-fixed-variant": "#00513a",
+                        "on-tertiary-fixed": "#002115",
+                        "on-primary": "#ffffff",
+                        "surface": "#f6faff",
+                        "tertiary-fixed": "#86f8c9",
+                        "on-background": "#161c21",
+                        "on-primary-fixed": "#001c38",
+                        "surface-tint": "#0060a8",
+                        "secondary-fixed": "#d3e4fe",
+                        "primary-container": "#1777c9",
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "secondary-container": "#d0e1fb",
+                        "on-error-container": "#93000a",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#ebf1f8",
+                        "primary-fixed-dim": "#a1c9ff",
+                        "primary": "#005ea4",
+                        "surface-container": "#e8eef5",
+                        "primary-fixed": "#d2e4ff",
+                        "secondary": "#505f76",
+                        "tertiary-fixed-dim": "#68dbae",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#004880",
+                        "surface-bright": "#f6faff",
+                        "background": "#f6faff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#e3e9f0",
+                        "surface-dim": "#d5dbe2",
+                        "outline": "#717783",
+                        "on-secondary-container": "#54647a",
+                        "on-tertiary-container": "#f5fff7",
+                        "surface-container-low": "#eef4fb",
+                        "on-surface-variant": "#414751",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "inverse-primary": "#a1c9ff",
+                        "on-primary-container": "#fdfcff",
+                        "tertiary": "#00694c",
+                        "inverse-surface": "#2b3136"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface h-screen w-screen overflow-hidden flex flex-col relative">
+<!-- Map Background -->
+<div class="absolute inset-0 z-0 bg-cover bg-center" data-alt="minimalist modern digital map background in light blue and grey tones showing streets and blocks with soft lighting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCrFHCyD2G-HMAO4M0Y5u1MzVNVJIn3umzDVTkcw9-VJ0zHpUFHf8aoO0I4nEe7g6d1uRFrvy2Cti_UXZ62vrhGGnMudS1iv0CkHb9MfZGJfkpIMToS2zJD-xssyEeIaBMJ8f94lei8JbalRC_uMu5bORuIyMRh9neZxkqF6oDFDVtrNyo5Wbtn_xbJa1j0f4K22a7NEtEP9BDf7IghJPIT78XRkurhKWQp2FGTYPxoYmI43YC8wyoWRx62Ar_OMHURZW8kiIg2T2I');">
+<!-- Heatmap overlay -->
+<div class="absolute inset-0 bg-gradient-radial from-error/20 to-transparent opacity-60 mix-blend-multiply" style="background: radial-gradient(circle at 50% 40%, rgba(226, 75, 74, 0.15) 0%, transparent 60%);"></div>
+<div class="absolute inset-0 bg-gradient-radial from-error/20 to-transparent opacity-50 mix-blend-multiply" style="background: radial-gradient(circle at 30% 70%, rgba(226, 75, 74, 0.1) 0%, transparent 50%);"></div>
+</div>
+<!-- Pins -->
+<div class="absolute top-1/3 left-1/4 z-10 flex flex-col items-center">
+<div class="bg-error w-4 h-4 rounded-full shadow-[0_0_15px_rgba(226,75,74,0.6)] border-2 border-white"></div>
+</div>
+<div class="absolute top-[45%] left-[60%] z-10 flex flex-col items-center">
+<div class="bg-[#EF9F27] w-4 h-4 rounded-full shadow-[0_0_15px_rgba(239,159,39,0.6)] border-2 border-white"></div>
+</div>
+<div class="absolute top-[60%] left-[30%] z-10 flex flex-col items-center">
+<div class="bg-[#1D9E75] w-4 h-4 rounded-full shadow-[0_0_15px_rgba(29,158,117,0.6)] border-2 border-white"></div>
+</div>
+<!-- Top Area (Search & Filters) -->
+<div class="absolute top-0 left-0 w-full z-20 px-6 pt-12">
+<div class="flex items-center gap-3">
+<div class="flex-1 bg-surface-container-lowest/90 backdrop-blur-md rounded-full px-5 py-3.5 flex items-center shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+<span class="material-symbols-outlined text-on-surface-variant mr-3">search</span>
+<input class="bg-transparent border-none outline-none w-full text-on-surface placeholder:text-on-surface-variant/70 font-body text-sm" placeholder="Buscar ubicación" type="text"/>
+</div>
+<button class="bg-surface-container-lowest/90 backdrop-blur-md w-12 h-12 rounded-full flex items-center justify-center shadow-[0_8px_30px_rgba(0,0,0,0.04)] text-on-surface-variant">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+</div>
+<!-- Main Content Area (Spacer) -->
+<main class="flex-1 relative z-10 pointer-events-none">
+<!-- Content goes here -->
+</main>
+<!-- FAB -->
+<button class="absolute bottom-32 right-6 z-30 bg-primary text-on-primary w-14 h-14 rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(0,94,164,0.25)] transition-transform hover:scale-105 active:scale-95">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+<!-- Bottom Sheet (Peek State) -->
+<div class="absolute bottom-[80px] w-full z-20 px-4 pb-4">
+<div class="bg-surface-container-lowest/95 backdrop-blur-xl rounded-[24px] p-5 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] pointer-events-auto">
+<div class="w-10 h-1 bg-surface-variant rounded-full mx-auto mb-4"></div>
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-1">
+<h2 class="text-on-surface font-headline font-semibold text-lg tracking-tight">Banker's Bar</h2>
+<p class="text-on-surface-variant font-body text-sm">Av. Principal 123, Esq. Calle 4</p>
+</div>
+<div class="bg-error/10 text-error px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                    Obra
+                </div>
+</div>
+<div class="mt-4 flex items-center gap-3">
+<img alt="User Avatar" class="w-8 h-8 rounded-full border-2 border-surface-container-lowest" data-alt="portrait of a young professional man with short dark hair smiling gently against a light background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBETF0YKPNKaMuHSg03JLMLhSwpiOYaiUyxBsdROUBcQMTThaNFxDAJ-QgHQxTGe4wPh9yRZL3_FqiI8nE48wybqXyPmWa1KmOyLleV1g59x5ZpzUjahUKTKkMBIs8wbXmiI4Deys0vt0JtkadwG2_9pmNWFr0CgheBM4Rf3T_PFetLD5wThNk2TUPNF0tt7X7O3Gjlw0LvFZfltr3Amla8N9KhZVGj09ePH1umytg5brOTRStEktWFBRihwU3AIoQ22CHb4nXzgkw"/>
+<div class="flex flex-col">
+<span class="text-on-surface-variant text-xs font-medium">Reportado por Juan P.</span>
+<span class="text-outline text-[10px]">Hace 5 min</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Shared Component: BottomNavBar -->
+<nav class="fixed bottom-0 w-full rounded-t-[24px] z-50 bg-surface-container-lowest dark:bg-slate-900 shadow-[0_-4px_20px_rgba(0,0,0,0.07)] border-none flex justify-around items-center px-4 pb-6 pt-3 md:hidden">
+<button class="flex flex-col items-center justify-center text-primary dark:text-blue-400 scale-110 active:scale-95 transition-transform duration-200 hover:opacity-80">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="text-[10px] font-medium font-['Inter'] uppercase tracking-wider">Inicio</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 active:scale-95 transition-transform duration-200 hover:opacity-80 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 p-2 rounded-lg">
+<span class="material-symbols-outlined mb-1">list_alt</span>
+<span class="text-[10px] font-medium font-['Inter'] uppercase tracking-wider">Historial</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 active:scale-95 transition-transform duration-200 hover:opacity-80 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 p-2 rounded-lg -translate-y-2">
+<div class="bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-2xl">add</span>
+</div>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 active:scale-95 transition-transform duration-200 hover:opacity-80 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 p-2 rounded-lg">
+<span class="material-symbols-outlined mb-1">notifications</span>
+<span class="text-[10px] font-medium font-['Inter'] uppercase tracking-wider">Alertas</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 active:scale-95 transition-transform duration-200 hover:opacity-80 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 p-2 rounded-lg">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="text-[10px] font-medium font-['Inter'] uppercase tracking-wider">Perfil</span>
+</button>
+</nav>
+<!-- TopAppBar for Web (Hidden on Mobile) -->
+<header class="hidden md:flex fixed top-0 w-full z-50 bg-[#F6FAFF]/80 dark:bg-slate-950/80 backdrop-blur-md bg-gradient-to-b from-[#E8EEF5] to-transparent shadow-sm justify-between items-center px-6 py-4 transition-all duration-300 ease-in-out border-none">
+<div class="flex items-center gap-4">
+<button class="text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 p-2 rounded-full">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-['Inter'] font-semibold tracking-tight text-xl text-[#005EA4] dark:text-blue-400 font-bold tracking-tighter">VialAI</h1>
+</div>
+<div class="flex items-center gap-6">
+<nav class="flex gap-6">
+<a class="text-[#005EA4] dark:text-blue-400 font-medium font-['Inter'] hover:bg-slate-100/50 dark:hover:bg-slate-800/50 px-3 py-2 rounded-md transition-all duration-300 ease-in-out" href="#">Inicio</a>
+<a class="text-slate-500 dark:text-slate-400 font-medium font-['Inter'] hover:bg-slate-100/50 dark:hover:bg-slate-800/50 px-3 py-2 rounded-md transition-all duration-300 ease-in-out" href="#">Historial</a>
+<a class="text-slate-500 dark:text-slate-400 font-medium font-['Inter'] hover:bg-slate-100/50 dark:hover:bg-slate-800/50 px-3 py-2 rounded-md transition-all duration-300 ease-in-out" href="#">Alertas</a>
+</nav>
+<div class="w-8 h-8 rounded-full overflow-hidden border-2 border-surface-container-lowest">
+<img alt="Perfil de usuario" class="w-full h-full object-cover" data-alt="portrait of a confident man with glasses and short hair in a light blue shirt" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApW0YGOnIyuEsaIBNDvgTpBSVxWp1pa3gO7GkoM-RkCvLiXWM6-hmjj_bYPKaWDzO7NWQW7xyBuZGOuBaEf-DpLRLpjmubHZZTDHn4ikf277s4txcqm89k350u_C0OCEEV7QYUUGmhJ5H7Ml-f8oSLLm0b5MwFD3iJcuoj1SiNtBwMR3MQbmGIRJCw8QBr42V7jvndpnfEksVMkVYdhg_DnZdzfIq3eBdW7vr-Z_IsXStMvAW5XAMcRBmXEcrxVMhSPDl-DzGwFUw"/>
+</div>
+</div>
+</header>
+</body></html>

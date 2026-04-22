@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VialAI - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error": "#ffffff",
+                    "on-surface": "#161c21",
+                    "error-container": "#ffdad6",
+                    "surface-variant": "#dde3ea",
+                    "surface-container-highest": "#dde3ea",
+                    "outline-variant": "#c0c7d3",
+                    "tertiary-container": "#008560",
+                    "on-tertiary-fixed-variant": "#00513a",
+                    "on-tertiary-fixed": "#002115",
+                    "on-primary": "#ffffff",
+                    "surface": "#f6faff",
+                    "tertiary-fixed": "#86f8c9",
+                    "on-background": "#161c21",
+                    "on-primary-fixed": "#001c38",
+                    "surface-tint": "#0060a8",
+                    "secondary-fixed": "#d3e4fe",
+                    "primary-container": "#1777c9",
+                    "on-secondary-fixed": "#0b1c30",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "secondary-container": "#d0e1fb",
+                    "on-error-container": "#93000a",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#ebf1f8",
+                    "primary-fixed-dim": "#a1c9ff",
+                    "primary": "#005ea4",
+                    "surface-container": "#e8eef5",
+                    "primary-fixed": "#d2e4ff",
+                    "secondary": "#505f76",
+                    "tertiary-fixed-dim": "#68dbae",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed-variant": "#004880",
+                    "surface-bright": "#f6faff",
+                    "background": "#f6faff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-high": "#e3e9f0",
+                    "surface-dim": "#d5dbe2",
+                    "outline": "#717783",
+                    "on-secondary-container": "#54647a",
+                    "on-tertiary-container": "#f5fff7",
+                    "surface-container-low": "#eef4fb",
+                    "on-surface-variant": "#414751",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "inverse-primary": "#a1c9ff",
+                    "on-primary-container": "#fdfcff",
+                    "tertiary": "#00694c",
+                    "inverse-surface": "#2b3136"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen flex items-center justify-center p-6 antialiased">
+<!-- Canvas -->
+<main class="w-full max-w-md mx-auto flex flex-col items-center">
+<!-- Brand / Header -->
+<div class="flex flex-col items-center mb-12 text-center">
+<div class="w-20 h-20 bg-surface-container-lowest rounded-[24px] shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 1;">
+                    shield
+                 </span>
+</div>
+<h1 class="text-[2.0rem] font-semibold text-primary tracking-tight mb-2">VialAI</h1>
+<p class="text-[0.875rem] text-on-surface-variant leading-relaxed tracking-wide">Reporta · Predice · Protege</p>
+</div>
+<!-- Login Form Container -->
+<div class="w-full bg-surface-container-lowest rounded-[24px] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.03)] flex flex-col gap-6">
+<!-- Inputs -->
+<form class="flex flex-col gap-5">
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-medium text-on-surface-variant px-1" for="email">Correo electrónico</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-xl">
+                            mail
+                        </span>
+<input class="w-full bg-surface-container-low text-on-surface text-sm rounded-[12px] py-3.5 pl-12 pr-4 border-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline outline-none" id="email" placeholder="usuario@ejemplo.com" required="" type="email"/>
+</div>
+</div>
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-medium text-on-surface-variant px-1" for="password">Contraseña</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-xl">
+                            lock
+                        </span>
+<input class="w-full bg-surface-container-low text-on-surface text-sm rounded-[12px] py-3.5 pl-12 pr-4 border-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline outline-none" id="password" placeholder="••••••••" required="" type="password"/>
+</div>
+</div>
+<div class="flex justify-end px-1 mt-[-4px]">
+<a class="text-xs text-primary font-medium hover:text-primary-container transition-colors" href="#">¿Olvidaste tu contraseña?</a>
+</div>
+<!-- Primary CTA -->
+<button class="w-full bg-primary hover:bg-primary-container text-on-primary font-semibold text-sm rounded-[12px] py-4 mt-2 transition-all shadow-[0_4px_14px_rgba(0,94,164,0.15)] active:scale-[0.98]" type="submit">
+                    Iniciar sesión
+                </button>
+</form>
+<!-- Divider -->
+<div class="flex items-center gap-4 my-2">
+<div class="h-px bg-surface-container-high flex-1"></div>
+<span class="text-xs text-outline font-medium">o continuar con</span>
+<div class="h-px bg-surface-container-high flex-1"></div>
+</div>
+<!-- Social Login -->
+<button class="w-full bg-surface-container-lowest border border-outline-variant/30 hover:bg-surface-container-low text-on-surface font-medium text-sm rounded-[12px] py-3.5 flex items-center justify-center gap-3 transition-all">
+<img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4M3h0fwvW9FNN239hABmil0c7p8A_TfNbQvt_Ks4ikfiBd5c-gdeRFRvmK5GnIlYc2qkKpA8iyTwZUFBZz-vvvK0_QS-8B1xzcZaSgFN241xZupqcMmIu0rtGIAZEPyOecC4Dt9d-fwf4SeoVXDuJedMh7TSH_nLSmsVtcSXsbtb2MwUlI6SIURrWe0mMlUvsTVUmgxiWMSke4Ql59A-hZdVg0o0OvdbPQVMrCAEI48djLkcldBveW69cQpZ9XB7-N-E9MB7FFss"/>
+                 Google
+            </button>
+<!-- Register Link -->
+<div class="text-center mt-4">
+<p class="text-sm text-on-surface-variant">
+                    ¿No tienes una cuenta? 
+                    <a class="text-primary font-semibold hover:text-primary-container ml-1" href="#">Registrarse</a>
+</p>
+</div>
+</div>
+</main>
+</body></html>
